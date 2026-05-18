@@ -2,24 +2,265 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>CSV Split &amp; Merge Service</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CSV Split &amp; Merge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        body {font-family: Arial, sans-serif; margin: 2rem;}
-        .section {margin-bottom: 2rem; padding: 1rem; border: 1px solid #ddd; border-radius: 5px;}
-        h2 {margin-top: 0;}
-        label {display: block; margin-top: 0.5rem;}
-        input, select {margin-top: 0.2rem;}
-        .flash {background: #f0f8ff; padding: .5rem; border: 1px solid #cce; margin-bottom: 1rem;}
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:        #f1f4f9;
+            --surface:   #ffffff;
+            --border:    #dde3ef;
+            --primary:   #4a6cf7;
+            --primary-h: #3a5ce5;
+            --success:   #2a9d63;
+            --text:      #1a2035;
+            --muted:     #64748b;
+            --radius:    12px;
+            --shadow:    0 2px 12px rgba(30,40,80,.08);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            box-shadow: 0 1px 4px rgba(30,40,80,.06);
+        }
+        header .logo-icon {
+            width: 34px; height: 34px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: .95rem;
+        }
+        header h1 {
+            font-size: 1.05rem; font-weight: 600;
+            color: var(--text);
+        }
+        header .badge {
+            margin-left: auto;
+            font-size: .72rem; font-weight: 500;
+            background: #eef1fd; color: var(--primary);
+            padding: .25rem .65rem; border-radius: 20px;
+        }
+
+        /* ── Main layout ── */
+        main {
+            max-width: 900px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.55rem; font-weight: 700;
+            margin-bottom: .35rem;
+        }
+        .page-subtitle {
+            color: var(--muted); font-size: .9rem;
+            margin-bottom: 2rem;
+        }
+
+        /* ── Flash messages ── */
+        .flash-list { margin-bottom: 1.5rem; }
+        .flash {
+            display: flex; align-items: flex-start; gap: .65rem;
+            padding: .85rem 1rem;
+            background: #eafaf2; border: 1px solid #b6e8d0;
+            border-left: 4px solid var(--success);
+            border-radius: var(--radius);
+            font-size: .875rem; color: #1a5c3a;
+            margin-bottom: .5rem;
+        }
+        .flash i { margin-top: 2px; }
+
+        /* ── Cards ── */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.75rem;
+        }
+        .card-icon {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        .card-icon.split  { background: #eef1fd; color: var(--primary); }
+        .card-icon.merge  { background: #edf9f3; color: var(--success); }
+
+        .card h2 {
+            font-size: 1rem; font-weight: 600;
+            margin-bottom: .35rem;
+        }
+        .card p.desc {
+            font-size: .825rem; color: var(--muted);
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+        }
+
+        /* ── Form elements ── */
+        .form-group { margin-bottom: 1rem; }
+
+        label {
+            display: block;
+            font-size: .8rem; font-weight: 500;
+            color: var(--muted);
+            margin-bottom: .4rem;
+            text-transform: uppercase; letter-spacing: .03em;
+        }
+
+        /* File drop zone */
+        .file-zone {
+            border: 2px dashed var(--border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s, background .2s;
+            position: relative;
+        }
+        .file-zone:hover { border-color: var(--primary); background: #f6f8ff; }
+        .file-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .file-zone .zone-icon { font-size: 1.5rem; color: var(--muted); margin-bottom: .4rem; }
+        .file-zone .zone-text { font-size: .8rem; color: var(--muted); }
+        .file-zone .zone-text strong { color: var(--primary); }
+        .file-name {
+            margin-top: .5rem;
+            font-size: .78rem; color: var(--text);
+            font-weight: 500;
+            min-height: 1rem;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: .55rem .75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: .875rem;
+            font-family: inherit;
+            color: var(--text);
+            background: #fafbfd;
+            transition: border-color .15s, box-shadow .15s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74,108,247,.12);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right .75rem center;
+            padding-right: 2rem;
+        }
+
+        /* ── Button ── */
+        .btn {
+            display: inline-flex; align-items: center; gap: .5rem;
+            width: 100%; justify-content: center;
+            padding: .65rem 1.25rem;
+            border: none; border-radius: 8px;
+            font-family: inherit; font-size: .875rem; font-weight: 600;
+            cursor: pointer;
+            transition: background .15s, transform .1s, box-shadow .15s;
+            margin-top: .5rem;
+        }
+        .btn-primary {
+            background: var(--primary); color: #fff;
+            box-shadow: 0 2px 8px rgba(74,108,247,.25);
+        }
+        .btn-primary:hover { background: var(--primary-h); box-shadow: 0 4px 14px rgba(74,108,247,.35); }
+        .btn-primary:active { transform: translateY(1px); }
+
+        .btn-success {
+            background: var(--success); color: #fff;
+            box-shadow: 0 2px 8px rgba(42,157,99,.25);
+        }
+        .btn-success:hover { background: #228a55; box-shadow: 0 4px 14px rgba(42,157,99,.35); }
+        .btn-success:active { transform: translateY(1px); }
+
+        /* ── Divider ── */
+        .divider {
+            display: flex; align-items: center; gap: .75rem;
+            color: var(--muted); font-size: .75rem;
+            margin: 2rem 0 1.5rem;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            color: var(--muted); font-size: .78rem;
+            margin: 3rem 0 2rem;
+        }
     </style>
 </head>
 <body>
+
+<header>
+    <div class="logo-icon"><i class="fa-solid fa-table-columns"></i></div>
+    <h1>CSV Split &amp; Merge</h1>
+    <span class="badge">v1.0</span>
+</header>
+
+<main>
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        {% for msg in messages %}
-          <div class="flash">{{ msg }}</div>
-        {% endfor %}
+        <div class="flash-list">
+          {% for msg in messages %}
+            <div class="flash"><i class="fa-solid fa-circle-check"></i> {{ msg }}</div>
+          {% endfor %}
+        </div>
       {% endif %}
     {% endwith %}
+
     {% block content %}{% endblock %}
+</main>
+
+<footer>CSV Split &amp; Merge &mdash; fast, local, no data retained after download.</footer>
+
+<script>
+    // Show selected filename(s) in each file zone
+    document.querySelectorAll('.file-zone input[type="file"]').forEach(input => {
+        input.addEventListener('change', () => {
+            const display = input.closest('.file-zone').nextElementSibling;
+            if (!display) return;
+            const names = Array.from(input.files).map(f => f.name);
+            display.textContent = names.length ? names.join(', ') : '';
+        });
+    });
+</script>
 </body>
 </html>
