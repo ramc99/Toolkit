@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>CSV Split &amp; Merge Service</title>
+    <style>
+        body {font-family: Arial, sans-serif; margin: 2rem;}
+        .section {margin-bottom: 2rem; padding: 1rem; border: 1px solid #ddd; border-radius: 5px;}
+        h2 {margin-top: 0;}
+        label {display: block; margin-top: 0.5rem;}
+        input, select {margin-top: 0.2rem;}
+        .flash {background: #f0f8ff; padding: .5rem; border: 1px solid #cce; margin-bottom: 1rem;}
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="flash">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</body>
+</html>
