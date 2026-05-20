@@ -1,6 +1,9 @@
 import os
+import secrets
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+SECRET_KEY = os.getenv("SECRET_KEY", secrets.token_hex(32))
 
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
 SPLIT_FOLDER = os.path.join(BASE_DIR, 'splits')

@@ -1,6 +1,6 @@
 from flask import Flask
 import os
-from csv_flask_app import config
+import config
 
 def create_app():
     """Factory to create the Flask application."""
