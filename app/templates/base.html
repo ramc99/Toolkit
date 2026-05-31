@@ -3,264 +3,930 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CSV Split &amp; Merge</title>
+    <title>{% block title %}Toolkit{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --bg:        #f1f4f9;
-            --surface:   #ffffff;
-            --border:    #dde3ef;
-            --primary:   #4a6cf7;
-            --primary-h: #3a5ce5;
-            --success:   #2a9d63;
-            --text:      #1a2035;
-            --muted:     #64748b;
-            --radius:    12px;
-            --shadow:    0 2px 12px rgba(30,40,80,.08);
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { DEFAULT: '#6366f1', hover: '#4f46e5' },
+                    }
+                }
+            }
         }
-
+    </script>
+    <style>
+        /* ── Light mode (default) ────────────────────────────────────────── */
+        :root {
+            --bg:         #f8fafc;
+            --card-bg:    #ffffff;
+            --card-border:#e2e8f0;
+            --sidebar-bg: #f1f5f9;
+            --sidebar-border: #e2e8f0;
+            --header-bg:  rgba(248,250,252,0.85);
+            --accent:     #4f46e5;
+            --success:    #16a34a;
+            --text:       #0f172a;
+            --muted:      #64748b;
+            --input-bg:   #f8fafc;
+            --file-zone-bg: rgba(0,0,0,.02);
+            --scrollbar:  #cbd5e1;
+        }
+        /* ── Dark mode ───────────────────────────────────────────────────── */
+        html.dark {
+            --bg:         #09090b;
+            --card-bg:    #18181b;
+            --card-border:#27272a;
+            --sidebar-bg: #111113;
+            --sidebar-border: #27272a;
+            --header-bg:  rgba(17,17,19,0.85);
+            --accent:     #6366f1;
+            --success:    #22c55e;
+            --text:       #fafafa;
+            --muted:      #a1a1aa;
+            --input-bg:   rgba(255,255,255,.04);
+            --file-zone-bg: rgba(255,255,255,.02);
+            --scrollbar:  #3f3f46;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
-            min-height: 100vh;
         }
 
-        /* ── Header ── */
-        header {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 0 2rem;
-            height: 60px;
+        /* ── Sidebar ─────────────────────────────────────────────────────── */
+        .sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 64px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 0;
+            z-index: 40;
+        }
+        .sidebar-logo {
+            width: 64px;
+            height: 56px;
             display: flex;
             align-items: center;
-            gap: .75rem;
-            box-shadow: 0 1px 4px rgba(30,40,80,.06);
+            justify-content: center;
+            border-bottom: 1px solid var(--card-border);
+            flex-shrink: 0;
         }
-        header .logo-icon {
-            width: 34px; height: 34px;
-            background: var(--primary);
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: .95rem;
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 12px 0;
+            flex: 1;
         }
-        header h1 {
-            font-size: 1.05rem; font-weight: 600;
-            color: var(--text);
-        }
-        header .badge {
-            margin-left: auto;
-            font-size: .72rem; font-weight: 500;
-            background: #eef1fd; color: var(--primary);
-            padding: .25rem .65rem; border-radius: 20px;
-        }
-
-        /* ── Main layout ── */
-        main {
-            max-width: 900px;
-            margin: 2.5rem auto;
-            padding: 0 1.5rem;
-        }
-
-        .page-title {
-            font-size: 1.55rem; font-weight: 700;
-            margin-bottom: .35rem;
-        }
-        .page-subtitle {
-            color: var(--muted); font-size: .9rem;
-            margin-bottom: 2rem;
-        }
-
-        /* ── Flash messages ── */
-        .flash-list { margin-bottom: 1.5rem; }
-        .flash {
-            display: flex; align-items: flex-start; gap: .65rem;
-            padding: .85rem 1rem;
-            background: #eafaf2; border: 1px solid #b6e8d0;
-            border-left: 4px solid var(--success);
-            border-radius: var(--radius);
-            font-size: .875rem; color: #1a5c3a;
-            margin-bottom: .5rem;
-        }
-        .flash i { margin-top: 2px; }
-
-        /* ── Cards ── */
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-        @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 1.75rem;
-        }
-        .card-icon {
-            width: 44px; height: 44px;
+        .sidebar-item {
+            position: relative;
+            width: 40px;
+            height: 40px;
             border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            transition: background .15s, color .15s;
+            cursor: pointer;
+            text-decoration: none;
         }
-        .card-icon.split  { background: #eef1fd; color: var(--primary); }
-        .card-icon.merge  { background: #edf9f3; color: var(--success); }
+        .sidebar-item:hover,
+        .sidebar-item.active {
+            background: rgba(99,102,241,.12);
+            color: var(--accent);
+        }
+        .sidebar-item .sidebar-tooltip {
+            position: absolute;
+            left: calc(100% + 12px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: #1c1c1f;
+            border: 1px solid rgba(255,255,255,.08);
+            color: #f4f4f5;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            padding: 4px 8px;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .15s;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,.4);
+        }
+        .sidebar-item:hover .sidebar-tooltip { opacity: 1; }
 
-        .card h2 {
-            font-size: 1rem; font-weight: 600;
-            margin-bottom: .35rem;
+        /* ── Main layout ────────────────────────────────────────────────── */
+        .main-with-sidebar {
+            margin-left: 64px;
         }
-        .card p.desc {
-            font-size: .825rem; color: var(--muted);
-            margin-bottom: 1.25rem;
+
+        /* ── Tool cards ─────────────────────────────────────────────────── */
+        .tool-card {
+            display: block;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 18px;
+            text-decoration: none;
+            transition: border-color .15s, box-shadow .15s, transform .15s;
+        }
+        .tool-card:hover {
+            border-color: rgba(99,102,241,.45);
+            box-shadow: 0 0 0 1px rgba(99,102,241,.15), 0 4px 20px rgba(0,0,0,.3);
+            transform: translateY(-1px);
+        }
+        .tool-card .icon-wrap {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        .tool-card h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .tool-card p {
+            font-size: 12px;
+            color: var(--muted);
             line-height: 1.5;
         }
 
-        /* ── Form elements ── */
-        .form-group { margin-bottom: 1rem; }
-
-        label {
-            display: block;
-            font-size: .8rem; font-weight: 500;
+        /* ── Picker buttons (replaces <select> everywhere) ──────────────── */
+        .pick-btn {
+            background: var(--card-bg);
+            border-color: var(--card-border);
             color: var(--muted);
-            margin-bottom: .4rem;
-            text-transform: uppercase; letter-spacing: .03em;
-        }
-
-        /* File drop zone */
-        .file-zone {
-            border: 2px dashed var(--border);
-            border-radius: 10px;
-            padding: 1.25rem;
-            text-align: center;
             cursor: pointer;
-            transition: border-color .2s, background .2s;
-            position: relative;
         }
-        .file-zone:hover { border-color: var(--primary); background: #f6f8ff; }
-        .file-zone input[type="file"] {
-            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-        }
-        .file-zone .zone-icon { font-size: 1.5rem; color: var(--muted); margin-bottom: .4rem; }
-        .file-zone .zone-text { font-size: .8rem; color: var(--muted); }
-        .file-zone .zone-text strong { color: var(--primary); }
-        .file-name {
-            margin-top: .5rem;
-            font-size: .78rem; color: var(--text);
-            font-weight: 500;
-            min-height: 1rem;
+        .pick-btn:hover { border-color: var(--accent); color: var(--text); }
+        .pick-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
         }
 
-        input[type="number"], select {
-            width: 100%;
-            padding: .55rem .75rem;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: .875rem;
-            font-family: inherit;
-            color: var(--text);
-            background: #fafbfd;
-            transition: border-color .15s, box-shadow .15s;
-            appearance: none;
-            -webkit-appearance: none;
-        }
-        input[type="number"]:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(74,108,247,.12);
-        }
-
-        select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right .75rem center;
-            padding-right: 2rem;
-        }
-
-        /* ── Button ── */
+        /* ── Buttons ────────────────────────────────────────────────────── */
         .btn {
             display: inline-flex; align-items: center; gap: .5rem;
-            width: 100%; justify-content: center;
-            padding: .65rem 1.25rem;
+            padding: .55rem 1.15rem;
             border: none; border-radius: 8px;
             font-family: inherit; font-size: .875rem; font-weight: 600;
             cursor: pointer;
             transition: background .15s, transform .1s, box-shadow .15s;
-            margin-top: .5rem;
         }
+        .btn:active { transform: translateY(1px); }
         .btn-primary {
-            background: var(--primary); color: #fff;
-            box-shadow: 0 2px 8px rgba(74,108,247,.25);
+            background: var(--accent); color: #fff;
+            box-shadow: 0 2px 8px rgba(99,102,241,.25);
         }
-        .btn-primary:hover { background: var(--primary-h); box-shadow: 0 4px 14px rgba(74,108,247,.35); }
-        .btn-primary:active { transform: translateY(1px); }
-
+        .btn-primary:hover {
+            background: #4f46e5;
+            box-shadow: 0 4px 14px rgba(99,102,241,.4);
+        }
         .btn-success {
-            background: var(--success); color: #fff;
-            box-shadow: 0 2px 8px rgba(42,157,99,.25);
+            background: #16a34a; color: #fff;
+            box-shadow: 0 2px 8px rgba(22,163,74,.2);
         }
-        .btn-success:hover { background: #228a55; box-shadow: 0 4px 14px rgba(42,157,99,.35); }
-        .btn-success:active { transform: translateY(1px); }
+        .btn-success:hover {
+            background: #15803d;
+            box-shadow: 0 4px 14px rgba(22,163,74,.35);
+        }
+        .btn-full { width: 100%; justify-content: center; }
 
-        /* ── Divider ── */
-        .divider {
-            display: flex; align-items: center; gap: .75rem;
-            color: var(--muted); font-size: .75rem;
-            margin: 2rem 0 1.5rem;
-        }
-        .divider::before, .divider::after {
-            content: ''; flex: 1; height: 1px; background: var(--border);
-        }
-
-        /* ── Footer ── */
-        footer {
+        /* ── File zone ──────────────────────────────────────────────────── */
+        .file-zone {
+            border: 1px dashed var(--card-border);
+            border-radius: 10px;
+            padding: 1.5rem 1.25rem;
             text-align: center;
-            color: var(--muted); font-size: .78rem;
-            margin: 3rem 0 2rem;
+            cursor: pointer;
+            transition: border-color .2s, background .2s;
+            position: relative;
+            background: var(--file-zone-bg);
         }
+        .file-zone:hover { border-color: var(--accent); background: rgba(99,102,241,.05); }
+        .file-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+
+        /* ── Form inputs ────────────────────────────────────────────────── */
+        .form-input {
+            width: 100%;
+            padding: .5rem .75rem;
+            font-size: .875rem;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text);
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .form-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+        }
+        .form-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 6px;
+        }
+
+        /* ── Section heading ────────────────────────────────────────────── */
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: 10px;
+        }
+
+        /* ── Breadcrumb ─────────────────────────────────────────────────── */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+        .breadcrumb a { color: var(--muted); text-decoration: none; }
+        .breadcrumb a:hover { color: var(--text); }
+        .breadcrumb .sep { color: #3f3f46; }
+
+        /* ── Page title ─────────────────────────────────────────────────── */
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        .page-subtitle {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+
+        /* ── Flash messages ─────────────────────────────────────────────── */
+        .flash-msg {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 16px;
+            background: rgba(34,197,94,.08);
+            border: 1px solid rgba(34,197,94,.25);
+            border-left: 3px solid #22c55e;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #4ade80;
+            margin-bottom: 8px;
+        }
+
+        /* ── Tool page card wrapper ─────────────────────────────────────── */
+        .tool-page-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 28px;
+            max-width: 560px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--scrollbar); border-radius: 3px; }
     </style>
 </head>
-<body>
+<body class="min-h-screen" style="background:var(--bg);color:var(--text)">
 
-<header>
-    <div class="logo-icon"><i class="fa-solid fa-table-columns"></i></div>
-    <h1>CSV Split &amp; Merge</h1>
-    <span class="badge">v1.0</span>
+<!-- ── Fixed Left Sidebar ──────────────────────────────────────────────── -->
+<aside class="sidebar" style="background:var(--sidebar-bg);border-color:var(--sidebar-border)">
+    <!-- Logo mark -->
+    <div class="sidebar-logo" style="border-color:var(--sidebar-border)">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm flex-shrink-0" style="background:var(--accent)">
+            <i class="fa-solid fa-file-lines text-xs"></i>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <button class="sidebar-item" data-filter="all" id="nav-home">
+            <i class="fa-solid fa-house text-base"></i>
+            <span class="sidebar-tooltip">All Tools</span>
+        </button>
+        <button class="sidebar-item" data-filter="csv" id="nav-csv">
+            <i class="fa-solid fa-table text-base"></i>
+            <span class="sidebar-tooltip">CSV Tools</span>
+        </button>
+        <button class="sidebar-item" data-filter="pdf" id="nav-pdf">
+            <i class="fa-solid fa-file-pdf text-base"></i>
+            <span class="sidebar-tooltip">PDF Tools</span>
+        </button>
+        <button class="sidebar-item" data-filter="image" id="nav-image">
+            <i class="fa-solid fa-image text-base"></i>
+            <span class="sidebar-tooltip">Image Tools</span>
+        </button>
+        <a href="/resume/" class="sidebar-item" id="nav-resume">
+            <i class="fa-solid fa-file-lines text-base"></i>
+            <span class="sidebar-tooltip">Resume Maker</span>
+        </a>
+        <a href="/cover-letter/" class="sidebar-item" id="nav-cover-letter">
+            <i class="fa-solid fa-envelope-open-text text-base"></i>
+            <span class="sidebar-tooltip">Cover Letter Maker</span>
+        </a>
+    </nav>
+</aside>
+
+<!-- ── Top Header ─────────────────────────────────────────────────────── -->
+<div class="main-with-sidebar">
+<header class="h-14 flex items-center px-5 gap-3 sticky top-0 z-30 backdrop-blur-sm"
+        style="border-bottom:1px solid var(--card-border);background:var(--header-bg)">
+    <span class="font-semibold text-sm" style="color:var(--text)">Toolkit</span>
+    <span id="header-page-title" class="text-sm ml-1" style="color:var(--muted)"></span>
+
+    <button id="theme-toggle"
+        class="ml-auto w-8 h-8 rounded-md flex items-center justify-center transition-colors"
+        style="color:var(--muted)"
+        title="Toggle theme">
+        <i id="theme-icon" class="fa-solid fa-moon text-sm"></i>
+    </button>
 </header>
 
-<main>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="flash-list">
-          {% for msg in messages %}
-            <div class="flash"><i class="fa-solid fa-circle-check"></i> {{ msg }}</div>
-          {% endfor %}
+<!-- Flash messages -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="px-6 pt-4">
+      {% for msg in messages %}
+        <div class="flash-msg">
+            <i class="fa-solid fa-circle-check mt-0.5 flex-shrink-0"></i>
+            <span>{{ msg }}</span>
         </div>
-      {% endif %}
-    {% endwith %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
 
+<main class="px-6 py-7 max-w-[1100px] mx-auto">
     {% block content %}{% endblock %}
 </main>
 
-<footer>CSV Split &amp; Merge &mdash; fast, local, no data retained after download.</footer>
+<footer class="text-center text-xs py-6 mt-4" style="color:var(--muted);border-top:1px solid var(--card-border)">
+    Toolkit &mdash; fast, local, no data retained after download.
+</footer>
+</div><!-- end .main-with-sidebar -->
+
+<!-- ── AI side panel ─────────────────────────────────────────────────── -->
+<div id="ai-panel"
+     class="fixed top-0 right-0 h-full w-80 shadow-2xl z-50 flex flex-col transition-transform duration-300 translate-x-full"
+     style="background:var(--card-bg);border-left:1px solid var(--card-border)"
+     aria-hidden="true">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-3 border-b flex-shrink-0">
+        <span class="font-semibold text-sm flex items-center gap-2 ">
+            <i class="fa-solid fa-robot text-violet-400"></i> AI Assistant
+        </span>
+        <button id="ai-panel-close"
+            class="w-7 h-7 rounded-md flex items-center justify-center  hover:  transition-colors"
+            aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- Messages -->
+    <div id="ai-messages" class="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
+        <div class="text-xs text-[#71717a] text-center py-4">
+            Ask me anything about this page or your files.
+        </div>
+    </div>
+
+    <!-- Input -->
+    <div class="flex-shrink-0 border-t p-3 space-y-2">
+        <!-- Attached file chip -->
+        <div id="ai-file-chip" class="hidden items-center gap-2 px-2 py-1.5 rounded-lg text-xs" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25)">
+            <i class="fa-solid fa-paperclip text-violet-400 flex-shrink-0"></i>
+            <span id="ai-file-name" class="truncate flex-1 text-violet-300"></span>
+            <button id="ai-file-remove" class="text-violet-400 hover:text-violet-200 flex-shrink-0" title="Remove file">
+                <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+        </div>
+
+        <div class="relative">
+            <textarea id="ai-panel-input" rows="3"
+                placeholder="Ask anything… or attach a file below"
+                class="w-full px-3 py-2 pr-10 text-sm border rounded-xl placeholder-[#71717a] focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-500 resize-none" style="background:var(--input-bg);border-color:var(--card-border);color:var(--text)"></textarea>
+            <button id="ai-panel-send"
+                class="absolute right-2 bottom-2 w-7 h-7 rounded-lg bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center transition-colors disabled:opacity-40"
+                title="Send (Enter)">
+                <i class="fa-solid fa-paper-plane text-xs"></i>
+            </button>
+        </div>
+
+        <div class="flex items-center justify-between">
+            <label for="ai-file-input" class="flex items-center gap-1.5 text-xs cursor-pointer px-2 py-1 rounded-md transition-colors" style="color:var(--muted)" title="Attach CSV, PDF or text file">
+                <i class="fa-solid fa-paperclip"></i> Attach file
+                <input type="file" id="ai-file-input" class="hidden" accept=".csv,.pdf,.txt,.tsv,.json,.md">
+            </label>
+            <p class="text-xs" style="color:var(--muted)">
+                <kbd class="px-1 rounded font-mono" style="background:var(--card-border)">Enter</kbd> send &nbsp;·&nbsp;
+                <kbd class="px-1 rounded font-mono" style="background:var(--card-border)">Shift↵</kbd> newline
+            </p>
+        </div>
+    </div>
+</div>
+<!-- Panel backdrop -->
+<div id="ai-backdrop" class="hidden fixed inset-0 z-40 bg-black/50" aria-hidden="true"></div>
+
+<!-- ── Floating AI button – bottom RIGHT ─────────────────────────────── -->
+<div class="fixed bottom-5 right-5 z-50">
+    <div class="relative group/ai">
+        <button id="float-ai-btn"
+           class="w-12 h-12 rounded-full bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center shadow-lg hover:shadow-violet-500/40 transition-all hover:scale-110">
+            <i class="fa-solid fa-robot text-lg"></i>
+        </button>
+        <span class="absolute right-14 bottom-1 bg-zinc-900 dark:bg-zinc-900 border  text-xs rounded-lg px-2 py-1 whitespace-nowrap opacity-0 group-hover/ai:opacity-100 transition-opacity pointer-events-none shadow">
+            Ask AI Assistant
+        </span>
+    </div>
+</div>
 
 <script>
-    // Show selected filename(s) in each file zone
+    // File zone — show selected filename
     document.querySelectorAll('.file-zone input[type="file"]').forEach(input => {
         input.addEventListener('change', () => {
-            const display = input.closest('.file-zone').nextElementSibling;
+            const display = input.closest('.file-zone').parentElement.querySelector('.file-name');
             if (!display) return;
-            const names = Array.from(input.files).map(f => f.name);
-            display.textContent = names.length ? names.join(', ') : '';
+            display.textContent = Array.from(input.files).map(f => f.name).join(', ');
         });
     });
+
+    // Theme toggle
+    const toggle = document.getElementById('theme-toggle');
+    const icon = document.getElementById('theme-icon');
+    const saved = localStorage.getItem('theme') || 'light';
+    const applyTheme = (theme) => {
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        icon.className = theme === 'dark' ? 'fa-solid fa-sun text-sm' : 'fa-solid fa-moon text-sm';
+    };
+    applyTheme(saved);
+    toggle.addEventListener('click', () => {
+        const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+        localStorage.setItem('theme', next);
+        applyTheme(next);
+    });
+
+    // ── Sidebar filter (homepage) / navigate (other pages) ───────────────
+    const FILTER_TITLES = {
+        all:    { title: 'All Tools',    subtitle: 'Split, merge, convert, OCR, protect and AI-assist your files — fast, local, private.' },
+        csv:    { title: 'CSV Tools',    subtitle: 'Split large CSVs into chunks or merge multiple CSV / TSV files.' },
+        pdf:    { title: 'PDF Tools',    subtitle: 'Organise, optimise, convert and secure your PDF files.' },
+        image:  { title: 'Image Tools',  subtitle: 'Convert, compress, resize, rotate or combine your images.' },
+        resume: { title: 'Resume Tools', subtitle: 'Build and download a professional resume as a PDF.' },
+    };
+
+    function applyFilter(f) {
+        const isHome = window.location.pathname === '/';
+        if (!isHome) {
+            // Navigate to the right section page
+            if (f === 'csv')   { window.location.href = '/'; return; }
+            if (f === 'pdf')   { window.location.href = '/pdf/'; return; }
+            if (f === 'image') { window.location.href = '/image/'; return; }
+            if (f === 'all')   { window.location.href = '/'; return; }
+            return;
+        }
+
+        // On homepage: show/hide category sections
+        document.querySelectorAll('[data-category]').forEach(el => {
+            el.style.display = (f === 'all' || el.dataset.category === f) ? '' : 'none';
+        });
+
+        // Update page title & subtitle
+        const t = FILTER_TITLES[f] || FILTER_TITLES.all;
+        const titleEl = document.getElementById('filter-title');
+        const subtitleEl = document.getElementById('filter-subtitle');
+        if (titleEl) titleEl.textContent = t.title;
+        if (subtitleEl) subtitleEl.textContent = t.subtitle;
+
+        // Update URL without reload
+        const url = f === 'all' ? '/' : `/?f=${f}`;
+        history.replaceState(null, '', url);
+
+        // Update active sidebar button
+        document.querySelectorAll('.sidebar-item[data-filter]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.filter === f);
+        });
+    }
+
+    // Wire sidebar buttons
+    document.querySelectorAll('.sidebar-item[data-filter]').forEach(btn => {
+        btn.addEventListener('click', () => applyFilter(btn.dataset.filter));
+    });
+
+    // Apply filter from URL on load (e.g. /?f=pdf)
+    (function() {
+        const path = window.location.pathname;
+        const f = new URLSearchParams(window.location.search).get('f');
+
+        if (path === '/' && f && FILTER_TITLES[f]) {
+            applyFilter(f);
+        } else {
+            // Set active based on current path
+            let active = 'all';
+            if (path === '/split' || path === '/merge') active = 'csv';
+            else if (path.startsWith('/pdf')) active = 'pdf';
+            else if (path.startsWith('/image')) active = 'image';
+            document.querySelectorAll('.sidebar-item[data-filter]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === active);
+            });
+        }
+    })();
+
+    // Populate header page title
+    (function() {
+        const path = window.location.pathname.replace(/\/$/, '') || '/';
+        const titles = {
+            '/':                 '',
+            '/split':            '/ Split CSV',
+            '/merge':            '/ Merge Files',
+            '/pdf':              '/ PDF Tools',
+            '/pdf/merge':        '/ Merge PDF',
+            '/pdf/split':        '/ Split PDF',
+            '/pdf/compress':     '/ Compress PDF',
+            '/pdf/rotate':       '/ Rotate Pages',
+            '/pdf/delete-pages': '/ Delete Pages',
+            '/pdf/extract-pages':'/ Extract Pages',
+            '/pdf/reorder':      '/ Reorder Pages',
+            '/pdf/watermark':    '/ Watermark',
+            '/pdf/number-pages': '/ Number Pages',
+            '/pdf/header-footer':'/ Header & Footer',
+            '/pdf/sign':         '/ Sign PDF',
+            '/pdf/repair':       '/ Repair PDF',
+            '/pdf/conversion':   '/ Convert PDF',
+            '/pdf/to-pptx':      '/ PDF to PowerPoint',
+            '/pdf/office-to-pdf':'/ Office to PDF',
+            '/pdf/ocr':          '/ OCR',
+            '/pdf/security':     '/ Security',
+            '/pdf/editor':       '/ Edit PDF',
+            '/pdf/compare':      '/ Compare PDFs',
+            '/pdf/ai':           '/ AI Assistant',
+            '/image':            '/ Image Tools',
+            '/image/convert':    '/ Convert Image',
+            '/image/compress':   '/ Compress Image',
+            '/image/resize':     '/ Resize Image',
+            '/image/rotate':     '/ Rotate & Flip',
+            '/image/to-pdf':     '/ Images to PDF',
+            '/resume':           '/ Resume Maker',
+            '/invoice':          '/ Invoice Generator',
+            '/csv-convert':      '/ Convert CSV',
+            '/image/crop':       '/ Crop Image',
+            '/image/watermark':  '/ Watermark Image',
+            '/image/collage':    '/ Image Collage',
+            '/pdf/to-images':    '/ PDF to Images',
+            '/image/remove-bg':  '/ Remove Background',
+            '/image/blur-faces': '/ Blur Faces',
+        };
+        const el = document.getElementById('header-page-title');
+        if (el) el.textContent = titles[path] || '';
+    })();
+
+    // ── Page help text ────────────────────────────────────────────────────
+    const PAGE_HELP = {
+        '/':                 'Home page. Pick any tool from CSV Tools, PDF Tools, or Image Tools.',
+        '/split':            'Split a CSV into multiple files with a chosen number of rows per file.',
+        '/merge':            'Merge multiple CSV or TSV files into a single download.',
+        '/pdf/':             'PDF Tools hub. Choose a tool to merge, split, compress, convert or secure PDFs.',
+        '/pdf/merge':        'Upload 2+ PDFs and click Merge to combine them into one file.',
+        '/pdf/split':        'Split a PDF every N pages, or enter custom ranges like "1-3, 5, 7-9".',
+        '/pdf/compress':     'Upload a PDF and click Compress to reduce its file size.',
+        '/pdf/rotate':       'Upload a PDF, pick an angle (90°/180°/270°), choose which pages to rotate.',
+        '/pdf/delete-pages': 'Upload a PDF and enter page numbers to remove, e.g. "2, 4-6".',
+        '/pdf/extract-pages':'Upload a PDF and enter which pages to keep, e.g. "1-3, 5".',
+        '/pdf/reorder':      'Upload a PDF and enter the new page order, e.g. "3,1,2".',
+        '/pdf/watermark':    'Upload a PDF and type watermark text — stamped diagonally on every page.',
+        '/pdf/number-pages': 'Upload a PDF to stamp page numbers. Pick position and starting number.',
+        '/pdf/header-footer':'Upload a PDF and enter header and/or footer text for every page.',
+        '/pdf/sign':         'Upload a PDF and enter a signer name to add a signature block.',
+        '/pdf/repair':       'Upload a damaged PDF to attempt automatic repair.',
+        '/pdf/conversion':   'Convert a PDF to Word, Excel, CSV, Image or PowerPoint.',
+        '/pdf/to-pptx':      'Upload a PDF — each page becomes a PowerPoint slide.',
+        '/pdf/office-to-pdf':'Upload a Word, Excel or PowerPoint file to convert it to PDF.',
+        '/pdf/ocr':          'Upload a scanned PDF or image to extract the text content.',
+        '/pdf/security':     'Password-protect a PDF, or unlock one by providing its password.',
+        '/pdf/editor':       'Upload a PDF and describe your edits in plain text.',
+        '/pdf/compare':      'Upload two PDFs to compare their text contents.',
+        '/pdf/ai':           'Type your question and press Enter. The AI answers via Ollama.',
+        '/image/':           'Image Tools hub — convert, compress, resize, rotate or combine images.',
+        '/image/convert':    'Upload an image and choose the target format (PNG, JPG, WEBP, BMP, TIFF).',
+        '/image/compress':   'Upload an image and set a quality level (1-100) to reduce file size.',
+        '/image/resize':     'Upload an image and enter the target width × height in pixels.',
+        '/image/rotate':     'Upload an image — rotate 90°/180°/270° or flip horizontally/vertically.',
+        '/image/to-pdf':     'Upload multiple images to combine them into a single PDF.',
+        '/resume/':          'Resume Maker — fill in your details, preview live, and download a PDF resume.',
+        '/cover-letter/':    'Cover Letter Maker — write a cover letter with live preview and PDF download.',
+        '/invoice/':         'Invoice Generator — create professional invoices with line items, tax, and PDF download.',
+        '/csv-convert':      'Convert CSV — export a CSV file as Excel (.xlsx) or JSON.',
+        '/image/crop':       'Crop Image — trim an image to specific pixel coordinates.',
+        '/image/watermark':  'Watermark Image — add a text watermark to an image.',
+        '/image/collage':    'Image Collage — combine multiple images into one.',
+        '/pdf/to-images':    'PDF to Images — convert each PDF page to PNG or JPG, download as ZIP.',
+        '/image/remove-bg':  'Remove Background — upload a photo, AI removes the background and returns a transparent PNG.',
+        '/image/blur-faces': 'Blur Faces — upload a photo to automatically detect and blur all faces for privacy.',
+    };
+
+    // All routes the AI knows about (injected into system context)
+    const ALL_ROUTES = [
+        { path: '/',                  label: 'Home' },
+        { path: '/split',             label: 'Split CSV' },
+        { path: '/merge',             label: 'Merge Files (CSV/TSV)' },
+        { path: '/pdf/',              label: 'PDF Tools hub' },
+        { path: '/pdf/merge',         label: 'Merge PDF' },
+        { path: '/pdf/split',         label: 'Split PDF' },
+        { path: '/pdf/compress',      label: 'Compress PDF' },
+        { path: '/pdf/rotate',        label: 'Rotate PDF pages' },
+        { path: '/pdf/delete-pages',  label: 'Delete PDF pages' },
+        { path: '/pdf/extract-pages', label: 'Extract PDF pages' },
+        { path: '/pdf/reorder',       label: 'Reorder PDF pages' },
+        { path: '/pdf/watermark',     label: 'Watermark PDF' },
+        { path: '/pdf/number-pages',  label: 'Number PDF pages' },
+        { path: '/pdf/header-footer', label: 'Add header & footer to PDF' },
+        { path: '/pdf/sign',          label: 'Sign PDF' },
+        { path: '/pdf/repair',        label: 'Repair PDF' },
+        { path: '/pdf/conversion',    label: 'Convert PDF (Word/Excel/CSV/Image)' },
+        { path: '/pdf/to-pptx',       label: 'PDF to PowerPoint' },
+        { path: '/pdf/office-to-pdf', label: 'Office (Word/Excel/PPT) to PDF' },
+        { path: '/pdf/ocr',           label: 'OCR — extract text from scanned PDF or image' },
+        { path: '/pdf/security',      label: 'Password-protect or unlock PDF' },
+        { path: '/pdf/editor',        label: 'Edit PDF text' },
+        { path: '/pdf/compare',       label: 'Compare two PDFs' },
+        { path: '/pdf/ai',            label: 'AI Assistant — chat with files via local Ollama LLM' },
+        { path: '/image/',            label: 'Image Tools hub' },
+        { path: '/image/convert',     label: 'Convert image format' },
+        { path: '/image/compress',    label: 'Compress image' },
+        { path: '/image/resize',      label: 'Resize image' },
+        { path: '/image/rotate',      label: 'Rotate or flip image' },
+        { path: '/image/to-pdf',      label: 'Images to PDF' },
+        { path: '/resume/',           label: 'Resume Maker — build and download a professional resume as PDF' },
+        { path: '/cover-letter/',     label: 'Cover Letter Maker — write and download a cover letter as PDF' },
+        { path: '/invoice/',        label: 'Invoice Generator — build and download a professional invoice as PDF' },
+        { path: '/csv-convert',     label: 'Convert CSV to Excel or JSON' },
+        { path: '/image/crop',      label: 'Crop Image' },
+        { path: '/image/watermark', label: 'Watermark Image' },
+        { path: '/image/collage',   label: 'Image Collage — combine multiple images' },
+        { path: '/pdf/to-images',   label: 'PDF to Images — convert PDF pages to PNG/JPG ZIP' },
+        { path: '/image/remove-bg',  label: 'Remove Background — AI removes image background, returns transparent PNG' },
+        { path: '/image/blur-faces', label: 'Blur Faces — auto-detect and blur all faces for privacy' },
+    ];
+
+    const curPath = window.location.pathname.replace(/\/$/, '') || '/';
+    const helpText = PAGE_HELP[curPath] || PAGE_HELP[curPath + '/'] ||
+        'Upload your file, fill in the options, and click the action button to download the result.';
+    // help-text element removed (? button removed per user request)
+
+    // ── AI side panel ─────────────────────────────────────────────────────
+    const aiPanel    = document.getElementById('ai-panel');
+    const aiBackdrop = document.getElementById('ai-backdrop');
+    const aiMessages = document.getElementById('ai-messages');
+    const aiInput    = document.getElementById('ai-panel-input');
+    const aiSend     = document.getElementById('ai-panel-send');
+
+    const curPageLabel = PAGE_HELP[curPath] ? (curPath === '/' ? 'Home' :
+        ALL_ROUTES.find(r => r.path === curPath)?.label || document.title) : document.title;
+
+    // Build system context string sent with every message
+    const routeList = ALL_ROUTES.map(r => `  ${r.label} → ${r.path}`).join('\n');
+    const systemCtx = `You are a helpful assistant for the Toolkit web app.\n` +
+        `The user is currently on: "${curPageLabel}" (${curPath}).\n` +
+        `Available tools in this app:\n${routeList}\n` +
+        `\n` +
+        `NAVIGATION RULE (critical): Whenever your answer involves a single specific tool ` +
+        `(e.g. the user asks how to sign, split, compress, merge, convert, OCR, etc.), ` +
+        `you MUST end your reply with exactly this token on its own line: [NAVIGATE:/path/here]\n` +
+        `Examples:\n` +
+        `  User: "how do I sign a PDF?" → end with [NAVIGATE:/pdf/sign]\n` +
+        `  User: "I want to compress" → end with [NAVIGATE:/pdf/compress]\n` +
+        `  User: "open merge" → end with [NAVIGATE:/pdf/merge]\n` +
+        `Only skip [NAVIGATE] when the answer involves multiple tools or is a general question.\n` +
+        `Do not add anything after the [NAVIGATE:...] token.`;
+
+    function openPanel(prefill) {
+        aiPanel.classList.remove('translate-x-full');
+        aiPanel.setAttribute('aria-hidden', 'false');
+        aiBackdrop.classList.remove('hidden');
+        if (prefill) { aiInput.value = prefill; }
+        aiInput.focus();
+    }
+    function closePanel() {
+        aiPanel.classList.add('translate-x-full');
+        aiPanel.setAttribute('aria-hidden', 'true');
+        aiBackdrop.classList.add('hidden');
+    }
+
+    document.getElementById('float-ai-btn').addEventListener('click', () => openPanel());
+    document.getElementById('ai-panel-close').addEventListener('click', closePanel);
+    aiBackdrop.addEventListener('click', closePanel);
+
+
+    // Escape HTML then convert app paths to clickable links
+    function renderAiText(text) {
+        const escaped = text
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        // Match known app paths like /pdf/sign or /image/compress
+        return escaped.replace(/(\/(?:pdf|image|resume)\/[\w-]*\/?)/g, (path) => {
+            const route = ALL_ROUTES.find(r => r.path === path || r.path === path.replace(/\/$/, ''));
+            const label = route ? route.label : path;
+            // data-nav-path triggers JS navigation — keeps panel open
+            return `<a href="#" data-nav-path="${path}" class="inline-flex items-center gap-1 underline font-semibold text-violet-300 hover:text-violet-200" title="Go to ${label}">` +
+                   `<svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 inline" viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>` +
+                   `${path}</a>`;
+        });
+    }
+
+    function addMessage(role, text) {
+        const isUser = role === 'user';
+        const wrap = document.createElement('div');
+        wrap.className = isUser ? 'flex justify-end' : 'flex justify-start';
+        const bubble = document.createElement('div');
+        bubble.className = isUser
+            ? 'max-w-[85%] bg-violet-600 text-white rounded-2xl rounded-br-sm px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap'
+            : 'max-w-[85%] bg-[#27272a] text-[#e4e4e7] rounded-2xl rounded-bl-sm px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap';
+        if (isUser) {
+            bubble.textContent = text;
+        } else {
+            bubble.innerHTML = renderAiText(text);
+        }
+        wrap.appendChild(bubble);
+        aiMessages.appendChild(wrap);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+        return bubble;
+    }
+
+    function addTyping() {
+        const wrap = document.createElement('div');
+        wrap.className = 'flex justify-start';
+        wrap.id = 'ai-typing';
+        wrap.innerHTML = `<div class="bg-[#27272a] rounded-2xl rounded-bl-sm px-3 py-2 text-xs text-[#71717a] flex gap-1 items-center">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#71717a] animate-bounce" style="animation-delay:0ms"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#71717a] animate-bounce" style="animation-delay:150ms"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#71717a] animate-bounce" style="animation-delay:300ms"></span>
+        </div>`;
+        aiMessages.appendChild(wrap);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+    }
+
+    // Persist chat history across page navigations via sessionStorage
+    const HISTORY_KEY = 'ai-chat-history';
+    const chatHistory = JSON.parse(sessionStorage.getItem(HISTORY_KEY) || '[]');
+
+    function saveHistory() {
+        sessionStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory));
+    }
+
+    function navigateWithHistory(dest) {
+        saveHistory();
+        sessionStorage.setItem('ai-panel-open', '1');
+        window.location.href = dest;
+    }
+
+    async function sendMessage() {
+        const text = aiInput.value.trim();
+        if (!text && !attachedFile) return;
+        const displayText = text || `Explain: ${attachedFile.name}`;
+        aiInput.value = '';
+        aiSend.disabled = true;
+
+        addMessage('user', attachedFile ? `📎 ${attachedFile.name}\n${displayText}` : displayText);
+        chatHistory.push({ role: 'user', content: displayText });
+        addTyping();
+
+        // Clear attachment after sending
+        const fileToSend = attachedFile;
+        if (attachedFile) {
+            attachedFile = null;
+            fileInput.value = '';
+            fileChip.classList.add('hidden');
+            fileChip.classList.remove('flex');
+        }
+
+        try {
+            let res;
+            if (fileToSend) {
+                const fd = new FormData();
+                fd.append('file', fileToSend);
+                fd.append('prompt', text || 'Explain this file and help me understand it.');
+                fd.append('context', systemCtx);
+                res = await fetch('/pdf/ai/ask', { method: 'POST', body: fd });
+            } else {
+                res = await fetch('/pdf/ai/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: text, context: systemCtx }),
+                });
+            }
+            document.getElementById('ai-typing')?.remove();
+            const data = await res.json();
+            if (data.reply) {
+                // Check for auto-navigate command
+                const navMatch = data.reply.match(/\[NAVIGATE:(\/[\w/-]*)\]/);
+                const cleanReply = data.reply.replace(/\[NAVIGATE:\/[\w/-]*\]\s*$/, '').trim();
+
+                addMessage('assistant', cleanReply || 'Opening that page for you…');
+                chatHistory.push({ role: 'assistant', content: cleanReply });
+                saveHistory();
+
+                if (navMatch) {
+                    setTimeout(() => navigateWithHistory(navMatch[1]), 800);
+                }
+            } else {
+                const errBubble = addMessage('assistant', data.error || 'Something went wrong.');
+                if (data.upgrade_url) {
+                    const link = document.createElement('a');
+                    link.href = data.upgrade_url;
+                    link.target = '_blank';
+                    link.rel = 'noopener';
+                    link.className = 'underline text-violet-300 block mt-1';
+                    link.textContent = '↗ Upgrade plan';
+                    errBubble.appendChild(link);
+                }
+            }
+        } catch (err) {
+            document.getElementById('ai-typing')?.remove();
+            addMessage('assistant', 'Network error — please try again.');
+        }
+        aiSend.disabled = false;
+        aiInput.focus();
+    }
+
+    // ── File attachment ───────────────────────────────────────────────────
+    const fileInput   = document.getElementById('ai-file-input');
+    const fileChip    = document.getElementById('ai-file-chip');
+    const fileName    = document.getElementById('ai-file-name');
+    const fileRemove  = document.getElementById('ai-file-remove');
+    let attachedFile  = null;
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files[0]) {
+            attachedFile = fileInput.files[0];
+            fileName.textContent = attachedFile.name;
+            fileChip.classList.remove('hidden');
+            fileChip.classList.add('flex');
+            if (!aiInput.value.trim()) aiInput.value = 'Explain this file and help me understand it.';
+            aiInput.focus();
+        }
+    });
+    fileRemove.addEventListener('click', () => {
+        attachedFile = null;
+        fileInput.value = '';
+        fileChip.classList.add('hidden');
+        fileChip.classList.remove('flex');
+    });
+
+    aiSend.addEventListener('click', sendMessage);
+    aiInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    // Navigate main page via AI-suggested links without closing the panel
+    aiMessages.addEventListener('click', (e) => {
+        const link = e.target.closest('[data-nav-path]');
+        if (!link) return;
+        e.preventDefault();
+        navigateWithHistory(link.dataset.navPath);
+    });
+
+    // Re-open panel and restore history if user navigated from an AI link
+    if (sessionStorage.getItem('ai-panel-open')) {
+        sessionStorage.removeItem('ai-panel-open');
+        // Restore previous messages
+        if (chatHistory.length) {
+            aiMessages.innerHTML = ''; // clear the default placeholder
+            chatHistory.forEach(m => addMessage(m.role, m.content));
+        }
+        openPanel();
+    }
 </script>
 </body>
 </html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cover Letter Maker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: { DEFAULT: '#2d5986', light: '#eaf0f7', border: '#b8cfe8' } },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    html, body { height: 100%; overflow: hidden; transition: background .2s, color .2s; }
+    .scrollpane { overflow-y: auto; height: calc(100vh - 56px); }
+
+    .tcard { transition: border-color .15s, box-shadow .15s; cursor: pointer; }
+    .tcard:hover { border-color: #93b8d8 !important; box-shadow: 0 1px 6px rgba(45,89,134,.12); }
+    .tcard.active { border-color: #2d5986 !important; box-shadow: 0 0 0 2px #2d598622; }
+    .tcard.active .tcard-label { color: #2d5986; font-weight: 600; }
+
+    .field-input {
+      width: 100%; border: 1px solid #cbd5e1; border-radius: 8px;
+      padding: 8px 12px; font-size: 13px; color: #1e293b; outline: none;
+      transition: border-color .15s, box-shadow .15s, background .2s, color .2s;
+      background: #fff;
+    }
+    .field-input:focus { border-color: #2d5986; box-shadow: 0 0 0 3px rgba(45,89,134,.1); }
+    .field-label { font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 4px; display: block; }
+
+    #preview-wrapper { background: #dde3ea; padding: 20px 16px; overflow-y: auto; height: calc(100vh - 56px); }
+    #preview-paper { background: white; box-shadow: 0 4px 24px rgba(0,0,0,.18); border-radius: 2px; width: 100%; max-width: 640px; margin: 0 auto; overflow: hidden; position: relative; }
+    #preview-frame { width: 794px; height: 1060px; border: none; display: block; transform-origin: top left; }
+    .preview-overlay { position: absolute; inset: 0; background: rgba(255,255,255,.65); display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); pointer-events: none; opacity: 0; transition: opacity .2s; }
+    .preview-overlay.visible { opacity: 1; }
+
+    .mock-line { background: #d1d9e0; border-radius: 2px; }
+    .mock-accent { background: #2d5986; border-radius: 2px; }
+
+    html.dark body                          { background: #09090b !important; color: #f4f4f5 !important; }
+    html.dark header.h-14                   { background: #111113 !important; border-color: #27272a !important; }
+    html.dark aside.w-48                    { background: #111113 !important; border-color: #27272a !important; }
+    html.dark .bg-white                     { background: #18181b !important; }
+    html.dark .bg-slate-100                 { background: #09090b !important; }
+    html.dark .bg-slate-50                  { background: #111113 !important; }
+    html.dark .border-slate-200             { border-color: #27272a !important; }
+    html.dark .border-slate-100             { border-color: #27272a !important; }
+    html.dark .text-slate-800,
+    html.dark .text-slate-700               { color: #f4f4f5 !important; }
+    html.dark .text-slate-600,
+    html.dark .text-slate-500,
+    html.dark .text-slate-400               { color: #a1a1aa !important; }
+    html.dark .field-input                  { background: #1c1c1f !important; border-color: #3f3f46 !important; color: #f4f4f5 !important; }
+    html.dark .field-label                  { color: #a1a1aa !important; }
+    html.dark .tcard                        { background: #18181b !important; border-color: #27272a !important; }
+    html.dark .mock-line                    { background: #3f3f46 !important; }
+    html.dark #preview-wrapper              { background: #1c1c1f !important; }
+
+    #theme-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid #e2e8f0; background: transparent; cursor: pointer; color: #94a3b8;
+      transition: background .15s, color .15s; flex-shrink: 0;
+    }
+    #theme-btn:hover { background: rgba(99,102,241,.1); color: #6366f1; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <header class="h-14 bg-white border-b border-slate-200 flex items-center px-5 gap-4 shrink-0 z-10 relative">
+    <div class="flex items-center gap-3">
+      <a href="/" class="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-700 transition border border-slate-200 rounded-lg px-2.5 py-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Toolkit
+      </a>
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        <span class="font-semibold text-slate-800 text-[15px] tracking-tight">Cover Letter Maker</span>
+      </div>
+    </div>
+    <div class="ml-auto flex items-center gap-2">
+      <button id="theme-btn" onclick="toggleTheme()">
+        <svg id="theme-icon-moon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
+        </svg>
+        <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 7a5 5 0 100 10 5 5 0 000-10z"/>
+        </svg>
+      </button>
+      <div id="preview-status" class="text-xs text-slate-400 mr-1 hidden">Updating…</div>
+      <button onclick="updatePreview()"
+        class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-sm font-medium transition">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Refresh Preview
+      </button>
+      <button onclick="downloadPDF()" id="dl-btn"
+        class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-brand hover:bg-brand/90 text-white text-sm font-medium transition shadow-sm">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        Download PDF
+      </button>
+    </div>
+  </header>
+
+  <div class="flex" style="height: calc(100vh - 56px)">
+
+    <!-- Template sidebar -->
+    <aside class="w-48 shrink-0 bg-white border-r border-slate-200 scrollpane py-4 px-3">
+      <p class="text-[11px] font-semibold uppercase tracking-widest text-slate-400 mb-3 px-1">Templates</p>
+
+      {% for t in templates %}
+      <div class="tcard rounded-xl border-2 border-slate-200 p-2.5 mb-3 {% if loop.first %}active{% endif %}"
+           id="tcard-{{ t }}" onclick="selectTemplate('{{ t }}')">
+        <div class="bg-slate-50 rounded-lg p-2 mb-2">
+
+          {% if t == 'classic' %}
+          <div class="flex flex-col gap-0.5">
+            <div class="mock-line h-1.5 w-14 mb-0.5"></div>
+            <div class="mock-line h-0.5 w-full opacity-50"></div>
+            <div class="mock-accent h-px w-full my-1"></div>
+            <div class="mock-line h-0.5 w-10 opacity-60 mb-1"></div>
+            <div class="mock-line h-0.5 w-full opacity-45"></div>
+            <div class="mock-line h-0.5 w-4/5 opacity-40"></div>
+            <div class="mock-line h-0.5 w-full opacity-45 mt-0.5"></div>
+            <div class="mock-line h-0.5 w-3/4 opacity-40"></div>
+            <div class="mock-line h-0.5 w-full opacity-45 mt-0.5"></div>
+            <div class="mock-line h-0.5 w-4/5 opacity-40"></div>
+          </div>
+
+          {% elif t == 'modern' %}
+          <div class="flex flex-col rounded-md overflow-hidden">
+            <div class="px-1.5 py-1.5" style="background:#2c4a6e">
+              <div class="h-1.5 w-12 rounded-sm bg-white opacity-90 mb-0.5"></div>
+              <div class="h-0.5 w-16 rounded-sm" style="background:#b8cfe8;opacity:.7"></div>
+              <div class="flex gap-1.5 mt-1">
+                <div class="h-0.5 w-5 rounded-sm" style="background:#cbd5e1;opacity:.6"></div>
+                <div class="h-0.5 w-4 rounded-sm" style="background:#cbd5e1;opacity:.6"></div>
+                <div class="h-0.5 w-6 rounded-sm" style="background:#cbd5e1;opacity:.6"></div>
+              </div>
+            </div>
+            <div class="px-1.5 py-1.5 bg-white space-y-0.5">
+              <div class="h-2 w-4/5 rounded-sm" style="background:#eaf0f7;border-left:2px solid #2c4a6e"></div>
+              <div class="mock-line h-0.5 w-full opacity-45"></div>
+              <div class="mock-line h-0.5 w-4/5 opacity-40"></div>
+              <div class="mock-line h-0.5 w-full opacity-45 mt-0.5"></div>
+              <div class="mock-line h-0.5 w-3/4 opacity-40"></div>
+            </div>
+          </div>
+
+          {% elif t == 'minimal' %}
+          <div class="flex flex-col gap-0.5 px-0.5">
+            <div class="h-1.5 w-12 rounded-sm mb-0.5" style="background:#111;opacity:.8"></div>
+            <div class="mock-line h-0.5 w-full opacity-45"></div>
+            <div class="h-px w-full my-1" style="background:#ccc"></div>
+            <div class="mock-line h-0.5 w-8 opacity-50 mb-0.5"></div>
+            <div class="mock-line h-0.5 w-full opacity-45"></div>
+            <div class="mock-line h-0.5 w-4/5 opacity-40"></div>
+            <div class="mock-line h-0.5 w-full opacity-45 mt-0.5"></div>
+            <div class="mock-line h-0.5 w-3/4 opacity-40"></div>
+          </div>
+          {% endif %}
+
+        </div>
+        <p class="tcard-label text-center text-[12px] text-slate-600">{{ t | title }}</p>
+      </div>
+      {% endfor %}
+    </aside>
+
+    <!-- Form panel -->
+    <main class="flex-1 scrollpane">
+      <form id="cl-form" class="p-5 space-y-5 max-w-xl">
+        <input type="hidden" name="template" id="template-input" value="classic" />
+
+        <!-- Contact -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            <h2 class="text-sm font-semibold text-slate-700">Your Contact Information</h2>
+          </div>
+          <div class="p-5 grid grid-cols-2 gap-3">
+            <div class="col-span-2">
+              <label class="field-label">Full Name *</label>
+              <input name="name" required placeholder="Jane Smith" class="field-input" />
+            </div>
+            <div>
+              <label class="field-label">Email *</label>
+              <input name="email" type="email" required placeholder="jane@example.com" class="field-input" />
+            </div>
+            <div>
+              <label class="field-label">Phone *</label>
+              <input name="phone" required placeholder="+1 555 000 0000" class="field-input" />
+            </div>
+            <div>
+              <label class="field-label">Location *</label>
+              <input name="location" required placeholder="New York, NY" class="field-input" />
+            </div>
+            <div>
+              <label class="field-label">LinkedIn</label>
+              <input name="linkedin" placeholder="linkedin.com/in/jane" class="field-input" />
+            </div>
+            <div class="col-span-2">
+              <label class="field-label">Website / Portfolio</label>
+              <input name="website" placeholder="janesmith.dev" class="field-input" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Letter Details -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            <h2 class="text-sm font-semibold text-slate-700">Letter Details</h2>
+          </div>
+          <div class="p-5 grid grid-cols-2 gap-3">
+            <div>
+              <label class="field-label">Date *</label>
+              <input name="date" required placeholder="May 31, 2026" class="field-input" />
+            </div>
+            <div>
+              <label class="field-label">Company *</label>
+              <input name="company" required placeholder="Acme Corp" class="field-input" />
+            </div>
+            <div>
+              <label class="field-label">Job Title *</label>
+              <input name="job_title" required placeholder="Senior Software Engineer" class="field-input" />
+            </div>
+            <div>
+              <label class="field-label">Hiring Manager (optional)</label>
+              <input name="hiring_manager" placeholder="Ms. Johnson" class="field-input" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Opening -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <h2 class="text-sm font-semibold text-slate-700">Opening Paragraph</h2>
+          </div>
+          <div class="p-5">
+            <label class="field-label">Introduce yourself and state the role you're applying for</label>
+            <textarea name="opening" rows="4"
+              placeholder="I am writing to express my strong interest in the [Role] position at [Company]…"
+              class="field-input resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- Body 1 -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <h2 class="text-sm font-semibold text-slate-700">Key Experience & Achievements</h2>
+          </div>
+          <div class="p-5">
+            <label class="field-label">Highlight your most relevant experience with specific results</label>
+            <textarea name="body_1" rows="4"
+              placeholder="In my current role at [Company], I led… resulting in…"
+              class="field-input resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- Body 2 -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <h2 class="text-sm font-semibold text-slate-700">Why This Company</h2>
+          </div>
+          <div class="p-5">
+            <label class="field-label">Explain why you're drawn to this company and how your skills fit</label>
+            <textarea name="body_2" rows="4"
+              placeholder="I am particularly drawn to [Company]'s work on… My experience with… aligns directly…"
+              class="field-input resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- Closing -->
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center gap-2">
+            <svg class="w-4 h-4 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            <h2 class="text-sm font-semibold text-slate-700">Closing Paragraph</h2>
+          </div>
+          <div class="p-5">
+            <label class="field-label">Call to action — express enthusiasm and next steps</label>
+            <textarea name="closing" rows="3"
+              placeholder="I would love the opportunity to discuss… Thank you for your time…"
+              class="field-input resize-none"></textarea>
+          </div>
+        </div>
+
+        <div class="h-6"></div>
+      </form>
+    </main>
+
+    <!-- Preview panel -->
+    <div class="w-[46%] shrink-0 flex flex-col border-l border-slate-200">
+      <div class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shrink-0">
+        <span class="text-xs font-semibold uppercase tracking-widest text-slate-400">Preview</span>
+        <span class="text-xs text-slate-400">Updates as you type</span>
+      </div>
+      <div id="preview-wrapper">
+        <div id="preview-paper">
+          <div class="preview-overlay" id="preview-overlay">
+            <div class="flex flex-col items-center gap-2">
+              <svg class="w-5 h-5 text-brand animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              <span class="text-xs text-slate-500">Updating…</span>
+            </div>
+          </div>
+          <iframe id="preview-frame" sandbox="allow-same-origin"></iframe>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  const SAMPLE_HTML = {{ sample_html | tojson }};
+
+  const previewFrame   = document.getElementById('preview-frame');
+  const previewPaper   = document.getElementById('preview-paper');
+  const previewOverlay = document.getElementById('preview-overlay');
+  const statusEl       = document.getElementById('preview-status');
+
+  const RESUME_W = 794;
+  function scalePreview() {
+    const scale = previewPaper.clientWidth / RESUME_W;
+    previewFrame.style.transform = `scale(${scale})`;
+    previewPaper.style.height = (previewFrame.offsetHeight * scale) + 'px';
+  }
+  new ResizeObserver(scalePreview).observe(previewPaper);
+  previewFrame.addEventListener('load', scalePreview);
+  previewFrame.srcdoc = SAMPLE_HTML;
+
+  function selectTemplate(name) {
+    document.querySelectorAll('.tcard').forEach(c => c.classList.remove('active'));
+    document.getElementById('tcard-' + name).classList.add('active');
+    document.getElementById('template-input').value = name;
+    scheduleUpdate();
+  }
+
+  let debounceTimer;
+  function scheduleUpdate() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(updatePreview, 600);
+  }
+
+  async function updatePreview() {
+    previewOverlay.classList.add('visible');
+    statusEl.classList.remove('hidden');
+    try {
+      const res = await fetch('/cover-letter/preview', { method: 'POST', body: new FormData(document.getElementById('cl-form')) });
+      if (res.ok) previewFrame.srcdoc = await res.text();
+    } catch (_) {}
+    previewOverlay.classList.remove('visible');
+    statusEl.classList.add('hidden');
+  }
+
+  document.getElementById('cl-form').addEventListener('input', scheduleUpdate);
+
+  async function downloadPDF() {
+    const btn = document.getElementById('dl-btn');
+    btn.disabled = true; btn.textContent = 'Generating…';
+    try {
+      const res = await fetch('/cover-letter/download', { method: 'POST', body: new FormData(document.getElementById('cl-form')) });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const name = (document.querySelector('input[name="name"]').value || 'cover_letter').replace(/\s+/g, '_');
+        a.download = name + '_cover_letter.pdf';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      }
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Download PDF`;
+    }
+  }
+
+  // Dark mode syncs with toolkit localStorage key
+  function applyTheme(t) {
+    document.documentElement.classList.toggle('dark', t === 'dark');
+    document.getElementById('theme-icon-moon').classList.toggle('hidden', t === 'dark');
+    document.getElementById('theme-icon-sun').classList.toggle('hidden', t !== 'dark');
+  }
+  function toggleTheme() {
+    const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+    localStorage.setItem('theme', next); applyTheme(next);
+  }
+  applyTheme(localStorage.getItem('theme') || 'light');
+</script>
+</body>
+</html>

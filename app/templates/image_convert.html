@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Convert Image{% endblock %}
+{% block content %}
+
+<div class="breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/image/">Image Tools</a><span class="sep">/</span><span>Convert Format</span></div>
+
+<div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sky-400" style="background:rgba(56,189,248,.1)">
+        <i class="fa-solid fa-arrows-rotate"></i>
+    </div>
+    <div>
+        <h1 class="page-title" style="margin-bottom:0">Convert Image Format</h1>
+        <p style="font-size:13px;color:var(--muted)">Convert between PNG, JPG, WEBP, BMP, TIFF and GIF.</p>
+    </div>
+</div>
+
+<div id="upload-section" class="tool-page-card">
+    <form id="tool-form" enctype="multipart/form-data" class="space-y-4">
+        <div>
+            <label class="form-label">Image File</label>
+            <div class="file-zone">
+                <input type="file" name="file" accept=".png,.jpg,.jpeg,.webp,.bmp,.tiff,.gif" required>
+                <i class="fa-solid fa-image text-2xl mb-1" style="color:var(--muted)"></i>
+                <div class="text-xs mt-1" style="color:var(--muted)"><strong style="color:var(--accent)">Click to browse</strong> or drag &amp; drop — PNG, JPG, WEBP, BMP, TIFF, GIF</div>
+            </div>
+            <p class="file-name text-xs mt-1" style="color:var(--muted);min-height:1rem"></p>
+        </div>
+        <div>
+            <label class="form-label">Convert to</label>
+            <input type="hidden" name="target_fmt" id="fmt-val" value="png">
+            <div class="flex flex-wrap gap-2" id="fmt-picker">
+                {% for f in ['png','jpg','webp','bmp','tiff'] %}
+                <button type="button" data-val="{{ f }}" class="pick-btn {% if f == 'png' %}active{% endif %} px-4 py-1.5 rounded-lg text-xs font-semibold border transition-colors">{{ f.upper() }}</button>
+                {% endfor %}
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-arrows-rotate"></i> Convert Image
+        </button>
+    </form>
+</div>
+<script>
+document.getElementById('fmt-picker').addEventListener('click', function(e) {
+    const btn = e.target.closest('.pick-btn'); if (!btn) return;
+    this.querySelectorAll('.pick-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('fmt-val').value = btn.dataset.val;
+});
+</script>
+
+<div id="loading-section" class="hidden tool-page-card text-center py-10">
+    <div class="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-4" style="border-color:var(--card-border);border-top-color:var(--accent)"></div>
+    <p style="color:var(--muted);font-size:13px">Converting…</p>
+</div>
+
+{% include 'image_comparison.html' %}
+{% include 'image_tool_js.html' %}
+{% endblock %}

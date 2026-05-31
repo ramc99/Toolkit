@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Rotate &amp; Flip Image{% endblock %}
+{% block content %}
+
+<div class="breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/image/">Image Tools</a><span class="sep">/</span><span>Rotate &amp; Flip</span></div>
+
+<div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-rose-400" style="background:rgba(251,113,133,.1)">
+        <i class="fa-solid fa-rotate-right"></i>
+    </div>
+    <div>
+        <h1 class="page-title" style="margin-bottom:0">Rotate &amp; Flip</h1>
+        <p style="font-size:13px;color:var(--muted)">Rotate by degrees or flip horizontally / vertically.</p>
+    </div>
+</div>
+
+<div id="upload-section" class="tool-page-card">
+    <form id="tool-form" enctype="multipart/form-data" class="space-y-4">
+        <div>
+            <label class="form-label">Image File</label>
+            <div class="file-zone">
+                <input type="file" name="file" accept=".png,.jpg,.jpeg,.webp,.bmp,.tiff" required>
+                <i class="fa-solid fa-image text-2xl mb-1" style="color:var(--muted)"></i>
+                <div class="text-xs mt-1" style="color:var(--muted)"><strong style="color:var(--accent)">Click to browse</strong> or drag &amp; drop</div>
+            </div>
+            <p class="file-name text-xs mt-1" style="color:var(--muted);min-height:1rem"></p>
+        </div>
+        <div>
+            <label class="form-label">Transform</label>
+            <div class="grid grid-cols-2 gap-2">
+                {% for val, label in [('rotate','Rotate'), ('flip_h','Flip Horizontal'), ('flip_v','Flip Vertical')] %}
+                <label class="flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer border transition-colors" style="border-color:var(--card-border)">
+                    <input type="radio" name="direction" value="{{ val }}" {% if val == 'rotate' %}checked{% endif %} style="accent-color:var(--accent)">
+                    <span class="text-sm" style="color:var(--text)">{{ label }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        <div id="degrees-group">
+            <label class="form-label">Degrees</label>
+            <input type="hidden" name="degrees" id="deg-val" value="90">
+            <div class="flex gap-2" id="deg-picker">
+                <button type="button" data-val="90"  class="pick-btn active flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors">90° CW</button>
+                <button type="button" data-val="180" class="pick-btn flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors">180°</button>
+                <button type="button" data-val="270" class="pick-btn flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors">270° CW</button>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-rotate-right"></i> Apply Transform
+        </button>
+    </form>
+</div>
+
+<div id="loading-section" class="hidden tool-page-card text-center py-10">
+    <div class="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-4" style="border-color:var(--card-border);border-top-color:var(--accent)"></div>
+    <p style="color:var(--muted);font-size:13px">Processing…</p>
+</div>
+
+{% include 'image_comparison.html' %}
+
+<script>
+document.querySelectorAll('input[name="direction"]').forEach(r => {
+    r.addEventListener('change', () => {
+        document.getElementById('degrees-group').style.display = r.value === 'rotate' ? '' : 'none';
+    });
+});
+document.getElementById('deg-picker').addEventListener('click', function(e) {
+    const btn = e.target.closest('.pick-btn'); if (!btn) return;
+    this.querySelectorAll('.pick-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('deg-val').value = btn.dataset.val;
+});
+</script>
+{% include 'image_tool_js.html' %}
+{% endblock %}

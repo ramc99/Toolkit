@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Image Tools{% endblock %}
+{% block content %}
+
+<div class="mb-6">
+    <h1 class="text-xl font-bold mb-1">Image Tools</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400">Convert, compress, resize, rotate, and bundle PNG/JPG/WEBP images.</p>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+    <a href="{{ url_for('image_toolkit.convert') }}" class="group bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-5 hover:shadow-md hover:border-[#4a6cf7]/40 transition-all">
+        <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center text-sky-500 mb-3 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-arrows-rotate"></i>
+        </div>
+        <h3 class="font-semibold text-sm mb-1">Convert Format</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">PNG ↔ JPG ↔ WEBP ↔ BMP ↔ TIFF</p>
+    </a>
+
+    <a href="{{ url_for('image_toolkit.compress') }}" class="group bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-5 hover:shadow-md hover:border-[#4a6cf7]/40 transition-all">
+        <div class="w-10 h-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-500 mb-3 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-compress"></i>
+        </div>
+        <h3 class="font-semibold text-sm mb-1">Compress</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Reduce image file size with adjustable quality.</p>
+    </a>
+
+    <a href="{{ url_for('image_toolkit.resize') }}" class="group bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-5 hover:shadow-md hover:border-[#4a6cf7]/40 transition-all">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-500 mb-3 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+        </div>
+        <h3 class="font-semibold text-sm mb-1">Resize</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Scale image to custom width &times; height.</p>
+    </a>
+
+    <a href="{{ url_for('image_toolkit.rotate') }}" class="group bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-5 hover:shadow-md hover:border-[#4a6cf7]/40 transition-all">
+        <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-500 mb-3 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-rotate-right"></i>
+        </div>
+        <h3 class="font-semibold text-sm mb-1">Rotate &amp; Flip</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Rotate 90°/180°/270° or flip horizontally/vertically.</p>
+    </a>
+
+    <a href="{{ url_for('image_toolkit.to_pdf') }}" class="group bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-5 hover:shadow-md hover:border-[#4a6cf7]/40 transition-all">
+        <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-500 mb-3 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-file-pdf"></i>
+        </div>
+        <h3 class="font-semibold text-sm mb-1">Images → PDF</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">Combine multiple images into a single PDF.</p>
+    </a>
+
+</div>
+{% endblock %}

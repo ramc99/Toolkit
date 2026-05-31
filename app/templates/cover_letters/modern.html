@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ sender.name }} — Cover Letter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --accent: #2c4a6e; --light: #eaf0f7; }
+
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10.5pt; color: #1f2937; background: #fff; margin: 0; }
+
+    .header { background: var(--accent); color: #fff; padding: 24pt 36pt 20pt; }
+    .name { font-size: 22pt; font-weight: 800; letter-spacing: -0.3pt; line-height: 1.1; }
+    .applying-for { font-size: 9.5pt; color: #b8cfe8; margin-top: 4pt; }
+    .contact-row { display: flex; flex-wrap: wrap; gap: 14pt; margin-top: 12pt; }
+    .contact-item { font-size: 8.5pt; color: #cbd5e1; }
+
+    .body { padding: 22pt 36pt 32pt; }
+
+    .meta { margin-bottom: 18pt; }
+    .meta-date { font-size: 9.5pt; color: #6b7280; margin-bottom: 8pt; }
+    .meta-recipient {
+      display: inline-flex; align-items: baseline; gap: 8pt;
+      padding: 9pt 14pt; background: var(--light);
+      border-left: 4pt solid var(--accent); border-radius: 0 5pt 5pt 0;
+    }
+    .meta-company { font-weight: 700; font-size: 10pt; color: var(--accent); }
+    .meta-role { font-size: 9.5pt; color: #6b7280; }
+
+    .salutation { font-size: 11pt; font-weight: 600; margin-bottom: 14pt; color: #1f2937; }
+
+    p { font-size: 10.5pt; color: #374151; margin-bottom: 11pt; line-height: 1.65; }
+
+    .sign-off { margin-top: 20pt; }
+    .sign-off-label { font-size: 10.5pt; color: #374151; margin-bottom: 8pt; }
+    .sign-name { font-size: 13pt; font-weight: 700; color: var(--accent); }
+
+    @media print {
+      @page { margin: 0; size: A4; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="name">{{ sender.name }}</div>
+    <div class="applying-for">Applying for: {{ job_title }} at {{ company }}</div>
+    <div class="contact-row">
+      {% if sender.email %}<span class="contact-item">{{ sender.email }}</span>{% endif %}
+      {% if sender.phone %}<span class="contact-item">{{ sender.phone }}</span>{% endif %}
+      {% if sender.location %}<span class="contact-item">{{ sender.location }}</span>{% endif %}
+      {% if sender.linkedin %}<span class="contact-item">{{ sender.linkedin }}</span>{% endif %}
+      {% if sender.website %}<span class="contact-item">{{ sender.website }}</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="meta">
+      <div class="meta-date">{{ date }}</div>
+      <div class="meta-recipient">
+        <span class="meta-company">{{ company }}</span>
+        <span class="meta-role">{{ job_title }}</span>
+      </div>
+    </div>
+
+    <div class="salutation">Dear {% if hiring_manager %}{{ hiring_manager }}{% else %}Hiring Manager{% endif %},</div>
+
+    {% if opening %}<p>{{ opening }}</p>{% endif %}
+    {% if body_1 %}<p>{{ body_1 }}</p>{% endif %}
+    {% if body_2 %}<p>{{ body_2 }}</p>{% endif %}
+    {% if closing %}<p>{{ closing }}</p>{% endif %}
+
+    <div class="sign-off">
+      <div class="sign-off-label">Sincerely,</div>
+      <div class="sign-name">{{ sender.name }}</div>
+    </div>
+  </div>
+
+</body>
+</html>

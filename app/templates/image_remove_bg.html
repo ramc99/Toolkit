@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Remove Background{% endblock %}
+{% block content %}
+
+<div class="breadcrumb">
+  <a href="/">Home</a><span class="sep">/</span>
+  <a href="/image/">Image Tools</a><span class="sep">/</span>
+  <span>Remove Background</span>
+</div>
+
+<div class="flex items-center gap-3 mb-6">
+  <div class="w-10 h-10 rounded-xl flex items-center justify-center text-purple-400" style="background:rgba(168,85,247,.1)">
+    <i class="fa-solid fa-wand-magic-sparkles"></i>
+  </div>
+  <div>
+    <h1 class="page-title" style="margin-bottom:0">Remove Background</h1>
+    <p style="font-size:13px;color:var(--muted)">
+      AI-powered background removal. Returns a transparent PNG — works on photos, products, portraits, and logos.
+    </p>
+  </div>
+</div>
+
+<div id="upload-section" class="tool-page-card" style="max-width:560px">
+  <form id="tool-form" enctype="multipart/form-data" class="space-y-4">
+    <div>
+      <label class="form-label">Image File</label>
+      <div class="file-zone">
+        <input type="file" name="file" accept=".png,.jpg,.jpeg,.webp" required>
+        <i class="fa-solid fa-image text-2xl mb-1" style="color:var(--muted)"></i>
+        <div class="text-xs mt-1" style="color:var(--muted)">
+          <strong style="color:var(--accent)">Click to browse</strong> or drag &amp; drop
+        </div>
+        <div class="text-xs mt-0.5" style="color:var(--muted)">PNG, JPG, WEBP</div>
+      </div>
+      <p class="file-name text-xs mt-1" style="color:var(--muted);min-height:1rem"></p>
+    </div>
+
+    <div class="rounded-lg px-3 py-2.5 text-xs flex items-start gap-2"
+         style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.2);color:var(--muted)">
+      <i class="fa-solid fa-circle-info mt-0.5 flex-shrink-0" style="color:#a855f7"></i>
+      <span>
+        Uses the <strong style="color:var(--text)">U2Net AI model</strong> to detect foreground subjects.
+        First use downloads the model (~170 MB) — subsequent runs are instant.
+        Output is always a <strong style="color:var(--text)">transparent PNG</strong>.
+      </span>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-full">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> Remove Background
+    </button>
+  </form>
+</div>
+
+<div id="loading-section" class="hidden tool-page-card text-center py-12" style="max-width:560px">
+  <div class="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-4"
+       style="border-color:var(--card-border);border-top-color:#a855f7"></div>
+  <p style="color:var(--muted);font-size:13px">Running AI model…</p>
+  <p style="color:var(--muted);font-size:11px;margin-top:4px">This takes 3–8 seconds on first run after model loads.</p>
+</div>
+
+{% include 'image_comparison.html' %}
+
+{% endblock %}

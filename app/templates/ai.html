@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}AI Assistant{% endblock %}
+{% block content %}
+
+<div class="mb-6 flex items-center gap-2">
+    <a href="/" class="text-sm text-gray-400 hover:text-[#4a6cf7] transition-colors"><i class="fa-solid fa-chevron-left mr-1 text-xs"></i>Back</a>
+    <span class="text-gray-300 dark:text-gray-600">/</span>
+    <span class="text-sm text-gray-600 dark:text-gray-300 font-medium">AI Assistant</span>
+</div>
+
+<div class="max-w-2xl">
+    <h1 class="text-xl font-bold mb-1">AI Assistant</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Ask a question — the backend forwards it to your Ollama model.</p>
+
+    <form method="post"
+          class="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-6 space-y-4">
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Prompt</label>
+            <textarea id="prompt" name="prompt" rows="5" required placeholder="Ask anything…"
+                class="w-full px-3 py-2 text-sm border border-slate-200 dark:border-gray-600 rounded-lg bg-slate-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4a6cf7]/30 focus:border-[#4a6cf7] resize-y">{{ prompt|default(prefill|default('')) }}</textarea>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1.5"><kbd class="px-1 py-0.5 rounded bg-slate-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 font-mono text-xs">Enter</kbd> to send &nbsp;·&nbsp; <kbd class="px-1 py-0.5 rounded bg-slate-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 font-mono text-xs">Shift+Enter</kbd> for new line</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-paper-plane"></i> Send
+        </button>
+    </form>
+
+    <script>
+        document.getElementById('prompt').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.closest('form').submit();
+            }
+        });
+    </script>
+
+    {% if error %}
+    <div class="mt-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 flex gap-3">
+        <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5 flex-shrink-0"></i>
+        <div class="space-y-2">
+            <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">AI model unavailable</p>
+            <p class="text-sm text-amber-700 dark:text-amber-400">{{ error }}</p>
+            <div class="flex flex-wrap gap-3 pt-1 text-xs">
+                <a href="https://ollama.com/upgrade" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-1 text-[#4a6cf7] hover:underline font-medium">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Upgrade plan
+                </a>
+                <a href="https://ollama.com/settings/usage" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-1 text-[#4a6cf7] hover:underline font-medium">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Check usage
+                </a>
+                <a href="https://ollama.com/docs" target="_blank" rel="noopener"
+                   class="inline-flex items-center gap-1 text-[#4a6cf7] hover:underline font-medium">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Docs
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if response %}
+    <div class="mt-5 bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+        <h2 class="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-robot text-violet-500"></i> Response
+        </h2>
+        <pre class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed font-mono bg-slate-50 dark:bg-gray-700 rounded-lg p-4">{{ response }}</pre>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

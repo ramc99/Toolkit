@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}PDF Tools{% endblock %}
+{% block content %}
+
+<div class="mb-6">
+    <h1 class="text-xl font-bold mb-1">PDF Tools</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400">A full PDF toolbox — merge, split, compress, convert, sign, and more.</p>
+</div>
+
+{% macro card(href, icon, color_bg, color_text, title, desc) %}
+<a href="{{ href }}" class="group bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-5 hover:shadow-md hover:border-[#4a6cf7]/40 transition-all">
+    <div class="w-10 h-10 rounded-xl {{ color_bg }} flex items-center justify-center {{ color_text }} mb-3">
+        <i class="{{ icon }}"></i>
+    </div>
+    <h3 class="font-semibold text-sm mb-1">{{ title }}</h3>
+    <p class="text-xs text-gray-500 dark:text-gray-400">{{ desc }}</p>
+</a>
+{% endmacro %}
+
+<h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Organise</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    {{ card(url_for('pdf_toolkit.merge_pdf'),    'fa-solid fa-layer-group',    'bg-blue-50 dark:bg-blue-900/20',   'text-blue-500',   'Merge PDF',       'Combine multiple PDFs into one file.') }}
+    {{ card(url_for('pdf_toolkit.split_pdf'),    'fa-solid fa-scissors',       'bg-amber-50 dark:bg-amber-900/20', 'text-amber-500',  'Split PDF',       'Split by page count or custom ranges.') }}
+    {{ card(url_for('pdf_toolkit.rotate_pdf'),   'fa-solid fa-rotate',         'bg-sky-50 dark:bg-sky-900/20',     'text-sky-500',    'Rotate Pages',    'Rotate all or specific pages.') }}
+    {{ card(url_for('pdf_toolkit.delete_pages'), 'fa-solid fa-trash-can',      'bg-rose-50 dark:bg-rose-900/20',   'text-rose-500',   'Delete Pages',    'Remove pages from a PDF.') }}
+    {{ card(url_for('pdf_toolkit.extract_pages'),'fa-solid fa-file-arrow-down','bg-teal-50 dark:bg-teal-900/20',   'text-teal-500',   'Extract Pages',   'Save specific pages as a new PDF.') }}
+    {{ card(url_for('pdf_toolkit.reorder_pdf'),  'fa-solid fa-arrows-up-down', 'bg-slate-100 dark:bg-slate-700/40','text-slate-500',  'Reorder Pages',   'Rearrange pages in a custom order.') }}
+</div>
+
+<h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Optimise &amp; Enhance</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    {{ card(url_for('pdf_toolkit.compress_pdf'),   'fa-solid fa-compress',    'bg-green-50 dark:bg-green-900/20',   'text-green-500',  'Compress PDF',     'Reduce file size by compressing streams.') }}
+    {{ card(url_for('pdf_toolkit.repair_pdf'),     'fa-solid fa-wrench',      'bg-orange-50 dark:bg-orange-900/20', 'text-orange-500', 'Repair PDF',       'Fix corrupted or damaged PDFs.') }}
+    {{ card(url_for('pdf_toolkit.watermark_pdf'),  'fa-solid fa-droplet',     'bg-pink-50 dark:bg-pink-900/20',     'text-pink-500',   'Watermark',        'Add a diagonal text watermark to every page.') }}
+    {{ card(url_for('pdf_toolkit.number_pages'),   'fa-solid fa-list-ol',     'bg-lime-50 dark:bg-lime-900/20',     'text-lime-600',   'Number Pages',     'Stamp page numbers at any position.') }}
+    {{ card(url_for('pdf_toolkit.header_footer'),  'fa-solid fa-heading',     'bg-yellow-50 dark:bg-yellow-900/20', 'text-yellow-600', 'Header &amp; Footer', 'Add centred header and footer text.') }}
+    {{ card(url_for('pdf_toolkit.sign_pdf'),       'fa-solid fa-signature',   'bg-emerald-50 dark:bg-emerald-900/20','text-emerald-500','Sign PDF',         'Add a visible signature box to the last page.') }}
+</div>
+
+<h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Convert</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    {{ card(url_for('pdf_toolkit.conversion_home'), 'fa-solid fa-file-export',    'bg-orange-50 dark:bg-orange-900/20',  'text-orange-500', 'PDF → Word/Excel/Image', 'Convert PDF to Word, Excel, CSV or images.') }}
+    {{ card(url_for('pdf_toolkit.to_pptx'),         'fa-solid fa-file-powerpoint','bg-red-50 dark:bg-red-900/20',        'text-red-500',    'PDF → PowerPoint',       'Turn each PDF page into a PPTX slide.') }}
+    {{ card(url_for('pdf_toolkit.office_to_pdf'),   'fa-solid fa-file-word',      'bg-blue-50 dark:bg-blue-900/20',      'text-blue-600',   'Office → PDF',           'Convert Word, Excel or PowerPoint to PDF.') }}
+</div>
+
+<h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Other Tools</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {{ card(url_for('pdf_toolkit.ocr'),      'fa-solid fa-magnifying-glass', 'bg-indigo-50 dark:bg-indigo-900/20', 'text-indigo-500', 'OCR',          'Extract text from images and scanned PDFs.') }}
+    {{ card(url_for('pdf_toolkit.security'), 'fa-solid fa-shield-halved',    'bg-red-50 dark:bg-red-900/20',       'text-red-500',    'Security',     'Password-protect or unlock PDFs.') }}
+    {{ card(url_for('pdf_toolkit.editor'),   'fa-solid fa-pen-nib',          'bg-purple-50 dark:bg-purple-900/20', 'text-purple-500', 'Editor',       'Edit text content in a PDF.') }}
+    {{ card(url_for('pdf_toolkit.compare'),  'fa-solid fa-code-compare',     'bg-cyan-50 dark:bg-cyan-900/20',     'text-cyan-500',   'Compare',      'Diff two PDF files side by side.') }}
+    {{ card(url_for('pdf_toolkit.ai'),       'fa-solid fa-robot',            'bg-violet-50 dark:bg-violet-900/20', 'text-violet-500', 'AI Assistant', 'Chat and summarise PDFs via Ollama.') }}
+</div>
+{% endblock %}

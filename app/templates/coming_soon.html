@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — Coming Soon{% endblock %}
+{% block content %}
+
+<div class="mb-6 flex items-center gap-2">
+    <a href="/" class="text-sm text-gray-400 hover:text-[#4a6cf7] transition-colors"><i class="fa-solid fa-chevron-left mr-1 text-xs"></i>Back</a>
+</div>
+
+<div class="max-w-md text-center mx-auto py-16">
+    <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-gray-800 flex items-center justify-center text-3xl text-gray-400 mx-auto mb-5">
+        <i class="fa-solid fa-hammer"></i>
+    </div>
+    <h1 class="text-xl font-bold mb-2">{{ title }}</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400">This feature is under development. Stay tuned!</p>
+    <div class="flex flex-wrap justify-center gap-3 mt-6">
+        <a href="/" class="btn btn-primary inline-flex">
+            <i class="fa-solid fa-house"></i> Back to Home
+        </a>
+        <a href="https://github.com/anthropics/claude-code/issues" target="_blank" rel="noopener"
+           class="btn inline-flex bg-slate-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-slate-300 dark:hover:bg-gray-600">
+            <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i> Request feature
+        </a>
+    </div>
+</div>
+{% endblock %}

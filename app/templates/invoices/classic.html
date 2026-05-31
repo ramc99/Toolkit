@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Invoice {{ invoice_number }}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10pt; color: #111; background: #fff; padding: 36pt 48pt; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28pt; }
+    .brand { font-size: 18pt; font-weight: 800; color: #1a2e45; }
+    .brand-sub { font-size: 8.5pt; color: #555; margin-top: 3pt; }
+    .inv-meta { text-align: right; }
+    .inv-label { font-size: 22pt; font-weight: 800; color: #1a2e45; letter-spacing: -0.5pt; }
+    .inv-num { font-size: 9.5pt; color: #555; margin-top: 3pt; }
+    .inv-dates { font-size: 9pt; color: #333; margin-top: 6pt; }
+    .inv-dates span { display: block; }
+    .parties { display: flex; gap: 40pt; margin-bottom: 24pt; }
+    .party { flex: 1; }
+    .party-label { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1pt; color: #888; margin-bottom: 5pt; }
+    .party-name { font-weight: 700; font-size: 10.5pt; color: #111; }
+    .party-detail { font-size: 9pt; color: #555; margin-top: 2pt; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16pt; }
+    thead th { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8pt; color: #fff; background: #1a2e45; padding: 7pt 10pt; }
+    thead th:last-child, thead th:nth-child(2), thead th:nth-child(3) { text-align: right; }
+    tbody tr { border-bottom: 0.5pt solid #e5e7eb; }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    tbody td { padding: 7pt 10pt; font-size: 9.5pt; color: #222; }
+    tbody td:nth-child(2), tbody td:nth-child(3), tbody td:nth-child(4) { text-align: right; white-space: nowrap; }
+    .totals { display: flex; justify-content: flex-end; margin-bottom: 20pt; }
+    .totals-box { min-width: 200pt; }
+    .totals-row { display: flex; justify-content: space-between; padding: 4pt 0; font-size: 9.5pt; border-bottom: 0.5pt solid #e5e7eb; }
+    .totals-row.grand { font-weight: 800; font-size: 11pt; color: #1a2e45; border-bottom: none; border-top: 1.5pt solid #1a2e45; padding-top: 6pt; margin-top: 2pt; }
+    .notes { font-size: 9pt; color: #555; border-top: 0.5pt solid #e5e7eb; padding-top: 12pt; }
+    .notes-label { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8pt; color: #888; margin-bottom: 4pt; }
+    @media print { body { padding: 0; } @page { margin: 18mm 16mm; size: A4; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="brand">{{ sender_name }}</div>
+      <div class="brand-sub">{{ sender_email }}{% if sender_phone %} · {{ sender_phone }}{% endif %}</div>
+      <div class="brand-sub">{{ sender_address }}</div>
+    </div>
+    <div class="inv-meta">
+      <div class="inv-label">INVOICE</div>
+      <div class="inv-num">{{ invoice_number }}</div>
+      <div class="inv-dates">
+        <span>Date: {{ date }}</span>
+        <span>Due: {{ due_date }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="parties">
+    <div class="party">
+      <div class="party-label">Bill To</div>
+      <div class="party-name">{{ client_name }}</div>
+      {% if client_email %}<div class="party-detail">{{ client_email }}</div>{% endif %}
+      {% if client_address %}<div class="party-detail">{{ client_address }}</div>{% endif %}
+    </div>
+  </div>
+  <table>
+    <thead><tr><th style="width:50%">Description</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.description }}</td>
+        <td>{{ item.qty }}</td>
+        <td>${{ "%.2f"|format(item.unit_price) }}</td>
+        <td>${{ "%.2f"|format(item.total) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="totals">
+    <div class="totals-box">
+      <div class="totals-row"><span>Subtotal</span><span>${{ "%.2f"|format(subtotal) }}</span></div>
+      {% if tax_rate > 0 %}
+      <div class="totals-row"><span>Tax ({{ tax_rate }}%)</span><span>${{ "%.2f"|format(tax_amount) }}</span></div>
+      {% endif %}
+      <div class="totals-row grand"><span>Total Due</span><span>${{ "%.2f"|format(grand_total) }}</span></div>
+    </div>
+  </div>
+  {% if notes %}<div class="notes"><div class="notes-label">Notes</div>{{ notes }}</div>{% endif %}
+</body>
+</html>

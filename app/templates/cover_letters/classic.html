@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ sender.name }} — Cover Letter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 11pt;
+      color: #1a1a1a;
+      background: #fff;
+      padding: 40pt 52pt;
+      line-height: 1.6;
+    }
+
+    .sender-name { font-size: 17pt; font-weight: bold; color: #1a2e45; margin-bottom: 4pt; }
+    .sender-contact { font-size: 9pt; color: #444; margin-bottom: 18pt; }
+    .sender-contact span + span::before { content: " · "; }
+
+    hr { border: none; border-top: 1.5pt solid #2c4a6e; margin-bottom: 16pt; }
+
+    .date { font-size: 10.5pt; color: #333; margin-bottom: 14pt; }
+
+    .recipient { margin-bottom: 16pt; }
+    .recipient-company { font-weight: bold; font-size: 10.5pt; }
+    .recipient-role { font-size: 10pt; color: #555; }
+
+    .salutation { font-size: 11pt; margin-bottom: 14pt; }
+
+    p { font-size: 11pt; color: #222; margin-bottom: 13pt; text-align: justify; }
+
+    .sign-off { margin-top: 22pt; }
+    .sign-off-label { font-size: 11pt; margin-bottom: 10pt; }
+    .sign-name { font-weight: bold; font-size: 12.5pt; color: #1a2e45; }
+
+    @media print {
+      body { padding: 0; }
+      @page { margin: 22mm 20mm; size: A4; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sender-name">{{ sender.name }}</div>
+  <div class="sender-contact">
+    <span>{{ sender.email }}</span>
+    <span>{{ sender.phone }}</span>
+    <span>{{ sender.location }}</span>
+    {% if sender.linkedin %}<span>{{ sender.linkedin }}</span>{% endif %}
+    {% if sender.website %}<span>{{ sender.website }}</span>{% endif %}
+  </div>
+
+  <hr />
+
+  <div class="date">{{ date }}</div>
+
+  <div class="recipient">
+    <div class="recipient-company">{{ company }}</div>
+    <div class="recipient-role">Re: {{ job_title }}</div>
+  </div>
+
+  <div class="salutation">Dear {% if hiring_manager %}{{ hiring_manager }}{% else %}Hiring Manager{% endif %},</div>
+
+  {% if opening %}<p>{{ opening }}</p>{% endif %}
+  {% if body_1 %}<p>{{ body_1 }}</p>{% endif %}
+  {% if body_2 %}<p>{{ body_2 }}</p>{% endif %}
+  {% if closing %}<p>{{ closing }}</p>{% endif %}
+
+  <div class="sign-off">
+    <div class="sign-off-label">Sincerely,</div>
+    <div class="sign-name">{{ sender.name }}</div>
+  </div>
+
+</body>
+</html>

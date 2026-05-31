@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Split CSV — Toolkit{% endblock %}
+{% block content %}
+
+<nav class="breadcrumb">
+    <a href="/">Home</a>
+    <span class="sep">/</span>
+    <span class="text-[#fafafa]">Split CSV</span>
+</nav>
+
+<div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl bg-indigo-500/12 flex items-center justify-center flex-shrink-0">
+        <i class="fa-solid fa-scissors text-indigo-400 text-base"></i>
+    </div>
+    <div>
+        <h1 class="page-title" style="margin-bottom:2px">Split CSV</h1>
+        <p class="text-[#a1a1aa] text-sm" style="margin-bottom:0">Divide a large CSV file into equal-row chunks — delivered as a ZIP archive.</p>
+    </div>
+</div>
+
+<div class="tool-page-card">
+    <form action="{{ url_for('main.split_csv_route') }}" method="post" enctype="multipart/form-data">
+
+        <div class="mb-5">
+            <label class="form-label">CSV File</label>
+            <div class="file-zone">
+                <input type="file" name="file" accept=".csv" required>
+                <div class="text-2xl text-[#52525b] mb-2"><i class="fa-solid fa-table"></i></div>
+                <div class="text-xs text-[#71717a]">
+                    <span class="text-indigo-400 font-semibold">Click to browse</span> or drag &amp; drop &mdash; .csv only
+                </div>
+            </div>
+            <p class="file-name text-xs text-[#a1a1aa] mt-1.5 min-h-4"></p>
+        </div>
+
+        <div class="mb-6">
+            <label class="form-label" for="row_count">Rows per split file</label>
+            <input id="row_count" type="number" name="row_count" min="10" placeholder="Default: 1 000"
+                class="form-input">
+            <p class="text-xs text-[#71717a] mt-1.5">
+                Minimum <strong class="text-[#a1a1aa]">10 rows</strong>.
+                Tiny leftovers are appended to the last chunk.
+            </p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-scissors"></i> Split CSV
+        </button>
+    </form>
+</div>
+
+<div class="mt-6 flex items-start gap-2.5 text-xs text-[#71717a] max-w-[560px]">
+    <i class="fa-solid fa-circle-info text-[#6366f1] mt-0.5 flex-shrink-0"></i>
+    <span>Files are processed in memory and not stored after download. The ZIP will contain one file per chunk, all sharing the original header row.</span>
+</div>
+
+{% endblock %}

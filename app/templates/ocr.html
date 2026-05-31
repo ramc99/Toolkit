@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}OCR{% endblock %}
+{% block content %}
+
+<div class="mb-6 flex items-center gap-2">
+    <a href="/" class="text-sm text-gray-400 hover:text-[#4a6cf7] transition-colors"><i class="fa-solid fa-chevron-left mr-1 text-xs"></i>Back</a>
+    <span class="text-gray-300 dark:text-gray-600">/</span>
+    <span class="text-sm text-gray-600 dark:text-gray-300 font-medium">OCR</span>
+</div>
+
+<div class="max-w-xl">
+    <h1 class="text-xl font-bold mb-1">OCR</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+        Upload an image to extract text, or a scanned PDF to make it searchable.
+    </p>
+
+    <form method="post" enctype="multipart/form-data"
+          class="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-6 space-y-4">
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">File (image or PDF)</label>
+            <div class="file-zone">
+                <input type="file" name="file" accept=".png,.jpg,.jpeg,.tif,.tiff,.pdf" required>
+                <div class="text-2xl text-gray-400 mb-1"><i class="fa-regular fa-file-image"></i></div>
+                <div class="text-xs text-gray-400">
+                    <strong class="text-[#4a6cf7]">Click to browse</strong> or drag &amp; drop<br>
+                    <span class="mt-1 block">PNG, JPG, TIFF, PDF</span>
+                </div>
+            </div>
+            <p class="file-name text-xs text-gray-500 dark:text-gray-400 mt-1 min-h-4"></p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-magnifying-glass"></i> Run OCR
+        </button>
+    </form>
+</div>
+{% endblock %}

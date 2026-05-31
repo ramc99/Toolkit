@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Convert PDF{% endblock %}
+{% block content %}
+
+<div class="mb-6 flex items-center gap-2">
+    <a href="/" class="text-sm text-gray-400 hover:text-[#4a6cf7] transition-colors"><i class="fa-solid fa-chevron-left mr-1 text-xs"></i>Back</a>
+    <span class="text-gray-300 dark:text-gray-600">/</span>
+    <span class="text-sm text-gray-600 dark:text-gray-300 font-medium">Convert PDF</span>
+</div>
+
+<div class="max-w-xl">
+    <h1 class="text-xl font-bold mb-1">PDF Conversion</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Convert PDFs to various formats and vice-versa.</p>
+
+    <form id="conv-form" method="post" enctype="multipart/form-data"
+          class="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-6 space-y-4">
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">File</label>
+            <div class="file-zone">
+                <input type="file" name="file" id="file" required>
+                <div class="text-2xl text-gray-400 mb-1"><i class="fa-regular fa-file"></i></div>
+                <div class="text-xs text-gray-400"><strong class="text-[#4a6cf7]">Click to browse</strong> or drag &amp; drop</div>
+            </div>
+            <p class="file-name text-xs text-gray-500 dark:text-gray-400 mt-1 min-h-4"></p>
+        </div>
+
+        <div>
+            <label class="form-label">Conversion target</label>
+            <input type="hidden" id="target-select" value="docx">
+            <div class="grid grid-cols-1 gap-2" id="conv-picker">
+                {% for v, l, ic in [
+                    ('docx',          'PDF → Word (DOCX)',     'fa-solid fa-file-word'),
+                    ('excel',         'PDF → Excel (XLSX)',    'fa-solid fa-file-excel'),
+                    ('csv',           'PDF → CSV',             'fa-solid fa-table'),
+                    ('image',         'PDF → Image (PNG)',     'fa-solid fa-image'),
+                    ('pdf_from_images','Images → PDF',         'fa-solid fa-file-pdf')
+                ] %}
+                <button type="button" data-val="{{ v }}" class="pick-btn {% if v == 'docx' %}active{% endif %} flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors text-left">
+                    <i class="{{ ic }} w-4 flex-shrink-0"></i> {{ l }}
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full mt-2">
+            <i class="fa-solid fa-arrow-right-arrow-left"></i> Convert
+        </button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('conv-picker').addEventListener('click', function(e) {
+        const btn = e.target.closest('.pick-btn'); if (!btn) return;
+        this.querySelectorAll('.pick-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('target-select').value = btn.dataset.val;
+    });
+    document.getElementById('conv-form').addEventListener('submit', function() {
+        const target = document.getElementById('target-select').value;
+        this.action = `/pdf/conversion/${target}`;
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Blur Faces{% endblock %}
+{% block content %}
+
+<div class="breadcrumb">
+  <a href="/">Home</a><span class="sep">/</span>
+  <a href="/image/">Image Tools</a><span class="sep">/</span>
+  <span>Blur Faces</span>
+</div>
+
+<div class="flex items-center gap-3 mb-6">
+  <div class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-400" style="background:rgba(251,191,36,.1)">
+    <i class="fa-solid fa-user-shield"></i>
+  </div>
+  <div>
+    <h1 class="page-title" style="margin-bottom:0">Blur Faces</h1>
+    <p style="font-size:13px;color:var(--muted)">
+      Automatically detects and blurs all faces in an image. Useful for privacy before sharing photos publicly.
+    </p>
+  </div>
+</div>
+
+<div id="upload-section" class="tool-page-card" style="max-width:560px">
+  <form id="tool-form" enctype="multipart/form-data" class="space-y-4">
+    <div>
+      <label class="form-label">Image File</label>
+      <div class="file-zone">
+        <input type="file" name="file" accept=".png,.jpg,.jpeg,.webp" required>
+        <i class="fa-solid fa-image text-2xl mb-1" style="color:var(--muted)"></i>
+        <div class="text-xs mt-1" style="color:var(--muted)">
+          <strong style="color:var(--accent)">Click to browse</strong> or drag &amp; drop
+        </div>
+        <div class="text-xs mt-0.5" style="color:var(--muted)">PNG, JPG, WEBP</div>
+      </div>
+      <p class="file-name text-xs mt-1" style="color:var(--muted);min-height:1rem"></p>
+    </div>
+
+    <div>
+      <div class="flex justify-between items-center mb-1">
+        <label class="form-label" style="margin-bottom:0">Blur Strength</label>
+        <span class="text-xs font-semibold" style="color:var(--accent)" id="strength-val">25</span>
+      </div>
+      <input type="range" name="strength" id="strength-slider"
+             min="5" max="99" step="2" value="25"
+             class="w-full" style="accent-color:var(--accent)"
+             oninput="document.getElementById('strength-val').textContent=this.value">
+      <div class="flex justify-between text-xs mt-0.5" style="color:var(--muted)">
+        <span>Subtle</span><span>Strong</span>
+      </div>
+    </div>
+
+    <div class="rounded-lg px-3 py-2.5 text-xs flex items-start gap-2"
+         style="background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);color:var(--muted)">
+      <i class="fa-solid fa-triangle-exclamation mt-0.5 flex-shrink-0" style="color:#f59e0b"></i>
+      <span>
+        Uses <strong style="color:var(--text)">OpenCV Haar Cascade</strong> detector.
+        Works best on front-facing, well-lit faces. Partially obscured, side-profile,
+        or very small faces may be missed.
+      </span>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-full">
+      <i class="fa-solid fa-user-shield"></i> Blur Faces
+    </button>
+  </form>
+</div>
+
+<div id="loading-section" class="hidden tool-page-card text-center py-12" style="max-width:560px">
+  <div class="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-4"
+       style="border-color:var(--card-border);border-top-color:var(--accent)"></div>
+  <p style="color:var(--muted);font-size:13px">Detecting and blurring faces…</p>
+</div>
+
+{% include 'image_comparison.html' %}
+
+{% endblock %}

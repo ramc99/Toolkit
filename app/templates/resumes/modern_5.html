@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ contact.name }} — Resume</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #1e1b4b;
+      --accent: #6d28d9;
+      --light: #ede9fe;
+      --muted: #6b7280;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 9.5pt;
+      color: #1f2937;
+      background: #fff;
+      margin: 0;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #6d28d9 100%);
+      color: #fff;
+      padding: 28pt 32pt 22pt;
+    }
+
+    .name { font-size: 26pt; font-weight: 800; letter-spacing: -0.5pt; line-height: 1; }
+    .tagline { font-size: 11pt; color: #c4b5fd; margin-top: 3pt; }
+
+    .contact-pills { display: flex; flex-wrap: wrap; gap: 8pt; margin-top: 12pt; }
+    .cpill {
+      font-size: 8pt;
+      color: #e0d9ff;
+      background: rgba(255,255,255,.1);
+      border: 0.75pt solid rgba(255,255,255,.2);
+      border-radius: 100pt;
+      padding: 3pt 9pt;
+    }
+
+    .summary-strip {
+      background: var(--light);
+      padding: 10pt 32pt;
+      font-size: 9pt;
+      color: var(--ink);
+      line-height: 1.6;
+      border-bottom: 1pt solid #ddd6fe;
+    }
+
+    .body { padding: 18pt 32pt 28pt; }
+
+    .section { margin-bottom: 16pt; }
+
+    .sec-title {
+      font-size: 10.5pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1pt;
+      color: var(--accent);
+      border-left: 4pt solid var(--accent);
+      padding-left: 8pt;
+      margin-bottom: 10pt;
+    }
+
+    .item { margin-bottom: 12pt; padding-left: 12pt; border-left: 1.5pt solid #ddd6fe; }
+    .item-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8pt; }
+    .item-title { font-weight: 700; font-size: 10pt; color: var(--ink); }
+    .item-date  { font-size: 8.5pt; color: var(--accent); font-style: italic; white-space: nowrap; flex-shrink: 0; }
+    .item-sub   { font-size: 9pt; color: var(--muted); margin-top: 1.5pt; }
+    .item-meta  { font-size: 8.5pt; color: var(--accent); margin-top: 1pt; }
+    .item-desc  { font-size: 9pt; color: #374151; margin-top: 3pt; line-height: 1.5; }
+
+    .bullets { list-style: none; padding: 0; margin-top: 5pt; }
+    .bullets li {
+      position: relative;
+      padding-left: 12pt;
+      font-size: 9pt;
+      line-height: 1.5;
+      margin-bottom: 2.5pt;
+      color: #374151;
+    }
+    .bullets li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 5pt;
+      width: 5pt;
+      height: 5pt;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .tag-grid { display: flex; flex-wrap: wrap; gap: 5pt; }
+    .tag {
+      background: var(--light);
+      color: var(--ink);
+      font-size: 8.5pt;
+      font-weight: 500;
+      padding: 3pt 9pt;
+      border-radius: 100pt;
+    }
+    .tag-accent {
+      display: inline-flex;
+      align-items: center;
+      gap: 4pt;
+      background: var(--light);
+      color: var(--ink);
+      font-size: 8.5pt;
+      font-weight: 500;
+      padding: 3pt 9pt;
+      border-radius: 100pt;
+    }
+    .tag-sub { font-size: 7.5pt; color: var(--accent); }
+
+    @media print {
+      @page { margin: 0; size: A4; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="name">{{ contact.name }}</div>
+    {% if experience %}<div class="tagline">{{ experience[0].role }}</div>{% endif %}
+    <div class="contact-pills">
+      {% if contact.email %}<span class="cpill">{{ contact.email }}</span>{% endif %}
+      {% if contact.phone %}<span class="cpill">{{ contact.phone }}</span>{% endif %}
+      {% if contact.location %}<span class="cpill">{{ contact.location }}</span>{% endif %}
+      {% if contact.linkedin %}<span class="cpill">{{ contact.linkedin }}</span>{% endif %}
+      {% if contact.website %}<span class="cpill">{{ contact.website }}</span>{% endif %}
+    </div>
+  </div>
+
+  {% if summary %}<div class="summary-strip">{{ summary }}</div>{% endif %}
+
+  <div class="body">
+
+    {% if experience %}
+    <div class="section">
+      <div class="sec-title">Experience</div>
+      {% for job in experience %}
+      <div class="item">
+        <div class="item-top">
+          <span class="item-title">{{ job.role }}</span>
+          <span class="item-date">{{ job.start_date }} – {{ job.end_date }}</span>
+        </div>
+        <div class="item-sub">{{ job.company }}</div>
+        {% if job.bullets %}
+        <ul class="bullets">{% for b in job.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if projects %}
+    <div class="section">
+      <div class="sec-title">Projects</div>
+      {% for proj in projects %}
+      <div class="item">
+        <div class="item-top">
+          <span class="item-title">{{ proj.name }}</span>
+          {% if proj.start_date or proj.end_date %}
+          <span class="item-date">{{ proj.start_date }}{% if proj.start_date and proj.end_date %} – {% endif %}{{ proj.end_date }}</span>
+          {% endif %}
+        </div>
+        {% if proj.url %}<div class="item-meta">{{ proj.url }}</div>{% endif %}
+        <p class="item-desc">{{ proj.description }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if education %}
+    <div class="section">
+      <div class="sec-title">Education</div>
+      {% for edu in education %}
+      <div class="item">
+        <div class="item-top">
+          <span class="item-title">{{ edu.degree }}{% if edu.field %}, {{ edu.field }}{% endif %}</span>
+          <span class="item-date">{{ edu.start_date }} – {{ edu.end_date }}</span>
+        </div>
+        <div class="item-sub">{{ edu.institution }}{% if edu.gpa %} · GPA {{ edu.gpa }}{% endif %}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if certifications %}
+    <div class="section">
+      <div class="sec-title">Certifications</div>
+      {% for cert in certifications %}
+      <div class="item">
+        <div class="item-top">
+          <span class="item-title">{{ cert.name }}</span>
+          <span class="item-date">{{ cert.issue_date }}</span>
+        </div>
+        <div class="item-sub">{{ cert.issuer }}</div>
+        {% if cert.credential_id or cert.url %}
+        <div class="item-meta">{% if cert.credential_id %}{{ cert.credential_id }}{% endif %}{% if cert.credential_id and cert.url %} · {% endif %}{% if cert.url %}{{ cert.url }}{% endif %}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if skills %}
+    <div class="section">
+      <div class="sec-title">Skills</div>
+      <div class="tag-grid">
+        {% for skill in skills %}<span class="tag">{{ skill.name }}</span>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if languages %}
+    <div class="section">
+      <div class="sec-title">Languages</div>
+      <div class="tag-grid">
+        {% for lang in languages %}
+        <span class="tag-accent">{{ lang.name }}<span class="tag-sub">{{ lang.proficiency }}</span></span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if awards %}
+    <div class="section">
+      <div class="sec-title">Awards & Honors</div>
+      {% for award in awards %}
+      <div class="item">
+        <div class="item-top">
+          <span class="item-title">{{ award.title }}</span>
+          <span class="item-date">{{ award.date }}</span>
+        </div>
+        <div class="item-sub">{{ award.issuer }}</div>
+        {% if award.description %}<p class="item-desc">{{ award.description }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+  </div>
+
+</body>
+</html>

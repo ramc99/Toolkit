@@ -1,92 +1,352 @@
 {% extends 'base.html' %}
+{% block title %}Toolkit — All Tools{% endblock %}
 {% block content %}
 
-<p class="page-title">File Tools</p>
-<p class="page-subtitle">Split large CSVs into manageable chunks, or merge multiple files into one.</p>
+<h1 class="page-title" id="filter-title">All Tools</h1>
+<p class="page-subtitle" id="filter-subtitle">Split, merge, convert, OCR, protect and AI-assist your files — fast, local, private.</p>
 
-<div class="grid">
+<!-- ── CSV ──────────────────────────────────────────────────────────── -->
+<div data-category="csv">
+<p class="section-label">CSV</p>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
 
-    <!-- ── Split Card ── -->
-    <div class="card">
-        <div class="card-icon split"><i class="fa-solid fa-scissors"></i></div>
-        <h2>Split a CSV</h2>
-        <p class="desc">Upload a CSV and choose how many rows each output file should contain. You'll get a ZIP of all the parts.</p>
+    <a href="/split" class="tool-card">
+        <div class="icon-wrap bg-indigo-500/10">
+            <i class="fa-solid fa-scissors text-indigo-400 text-base"></i>
+        </div>
+        <h3>Split CSV</h3>
+        <p>Divide a CSV into equal-row chunks as a ZIP.</p>
+    </a>
 
-        <form action="{{ url_for('main.split_csv_route') }}" method="post" enctype="multipart/form-data">
+    <a href="/merge" class="tool-card">
+        <div class="icon-wrap bg-emerald-500/10">
+            <i class="fa-solid fa-code-merge text-emerald-400 text-base"></i>
+        </div>
+        <h3>Merge Files</h3>
+        <p>Stack multiple CSV / TSV files into one download.</p>
+    </a>
 
-            <div class="form-group">
-                <label for="split-file">CSV file</label>
-                <div class="file-zone">
-                    <input type="file" name="file" id="split-file" accept=".csv" required>
-                    <div class="zone-icon"><i class="fa-regular fa-file-csv"></i></div>
-                    <div class="zone-text"><strong>Click to browse</strong> or drag &amp; drop</div>
-                    <div class="zone-text">.csv only</div>
-                </div>
-                <div class="file-name"></div>
-            </div>
+    <a href="/csv-convert" class="tool-card">
+        <div class="icon-wrap bg-green-500/10">
+            <i class="fa-solid fa-file-export text-green-400 text-base"></i>
+        </div>
+        <h3>Convert CSV</h3>
+        <p>Export a CSV file as Excel (.xlsx) or JSON.</p>
+    </a>
 
-            <div class="form-group">
-                <label for="row_count">Rows per split</label>
-                <input type="number" name="row_count" id="row_count" min="10" placeholder="Default: 1000">
-            </div>
+</div>
+</div>
 
-            <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-scissors"></i> Split CSV
-            </button>
-        </form>
-    </div>
+<!-- ── PDF ───────────────────────────────────────────────────────────── -->
+<div data-category="pdf">
 
-    <!-- ── Merge Card ── -->
-    <div class="card">
-        <div class="card-icon merge"><i class="fa-solid fa-code-merge"></i></div>
-        <h2>Merge Files</h2>
-        <p class="desc">Select multiple CSV or TSV files — they'll be stacked row-by-row and returned as a single download.</p>
+<p class="section-label">PDF — Organise</p>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
 
-        <form action="{{ url_for('main.merge_csv_route') }}" method="post" enctype="multipart/form-data">
+    <a href="{{ url_for('pdf_toolkit.merge_pdf') }}" class="tool-card">
+        <div class="icon-wrap bg-blue-500/10">
+            <i class="fa-solid fa-layer-group text-blue-400 text-base"></i>
+        </div>
+        <h3>Merge PDF</h3>
+        <p>Combine multiple PDFs into one file.</p>
+    </a>
 
-            <div class="form-group">
-                <label for="merge-files">CSV / TSV files</label>
-                <div class="file-zone">
-                    <input type="file" name="files" id="merge-files" accept=".csv,.tsv" multiple required>
-                    <div class="zone-icon"><i class="fa-regular fa-copy"></i></div>
-                    <div class="zone-text"><strong>Click to browse</strong> or drag &amp; drop</div>
-                    <div class="zone-text">.csv and .tsv — select multiple</div>
-                </div>
-                <div class="file-name"></div>
-            </div>
+    <a href="{{ url_for('pdf_toolkit.split_pdf') }}" class="tool-card">
+        <div class="icon-wrap bg-amber-500/10">
+            <i class="fa-solid fa-scissors text-amber-400 text-base"></i>
+        </div>
+        <h3>Split PDF</h3>
+        <p>Split by page count or custom ranges.</p>
+    </a>
 
-            <div class="form-group">
-                <label for="format">Output format</label>
-                <select name="format" id="format">
-                    <option value="csv" selected>CSV (default)</option>
-                    <option value="tsv">TSV</option>
-                    <option value="pdf">PDF</option>
-                </select>
-            </div>
+    <a href="{{ url_for('pdf_toolkit.rotate_pdf') }}" class="tool-card">
+        <div class="icon-wrap bg-sky-500/10">
+            <i class="fa-solid fa-rotate text-sky-400 text-base"></i>
+        </div>
+        <h3>Rotate Pages</h3>
+        <p>Rotate all or specific pages.</p>
+    </a>
 
-            <button type="submit" class="btn btn-success">
-                <i class="fa-solid fa-code-merge"></i> Merge Files
-            </button>
-        </form>
-    </div>
+    <a href="{{ url_for('pdf_toolkit.delete_pages') }}" class="tool-card">
+        <div class="icon-wrap bg-rose-500/10">
+            <i class="fa-solid fa-trash-can text-rose-400 text-base"></i>
+        </div>
+        <h3>Delete Pages</h3>
+        <p>Remove pages from a PDF.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.extract_pages') }}" class="tool-card">
+        <div class="icon-wrap bg-teal-500/10">
+            <i class="fa-solid fa-file-arrow-down text-teal-400 text-base"></i>
+        </div>
+        <h3>Extract Pages</h3>
+        <p>Save specific pages as a new PDF.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.reorder_pdf') }}" class="tool-card">
+        <div class="icon-wrap bg-zinc-500/10">
+            <i class="fa-solid fa-arrows-up-down text-zinc-400 text-base"></i>
+        </div>
+        <h3>Reorder Pages</h3>
+        <p>Rearrange pages in a custom order.</p>
+    </a>
 
 </div>
 
-<div class="divider">tips</div>
+<p class="section-label">PDF — Optimise &amp; Enhance</p>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
 
-<div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; font-size:.82rem; color:var(--muted);">
-    <div style="display:flex;gap:.5rem;align-items:flex-start;">
-        <i class="fa-solid fa-circle-info" style="color:var(--primary);margin-top:2px;"></i>
-        <span>The minimum split size is <strong>10 rows</strong>. Leftovers smaller than 10 are appended to the last file.</span>
-    </div>
-    <div style="display:flex;gap:.5rem;align-items:flex-start;">
-        <i class="fa-solid fa-circle-info" style="color:var(--primary);margin-top:2px;"></i>
-        <span>When merging, columns are <strong>union-joined</strong> — missing values fill as blank.</span>
-    </div>
-    <div style="display:flex;gap:.5rem;align-items:flex-start;">
-        <i class="fa-solid fa-circle-info" style="color:var(--primary);margin-top:2px;"></i>
-        <span>PDF output is limited to <strong>500 rows</strong> for performance. Use CSV/TSV for full data.</span>
-    </div>
+    <a href="{{ url_for('pdf_toolkit.compress_pdf') }}" class="tool-card">
+        <div class="icon-wrap bg-green-500/10">
+            <i class="fa-solid fa-compress text-green-400 text-base"></i>
+        </div>
+        <h3>Compress PDF</h3>
+        <p>Reduce file size by compressing streams.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.repair_pdf') }}" class="tool-card">
+        <div class="icon-wrap bg-orange-500/10">
+            <i class="fa-solid fa-wrench text-orange-400 text-base"></i>
+        </div>
+        <h3>Repair PDF</h3>
+        <p>Fix corrupted or damaged PDFs.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.watermark_pdf') }}" class="tool-card">
+        <div class="icon-wrap bg-pink-500/10">
+            <i class="fa-solid fa-droplet text-pink-400 text-base"></i>
+        </div>
+        <h3>Watermark</h3>
+        <p>Add a diagonal text watermark to every page.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.number_pages') }}" class="tool-card">
+        <div class="icon-wrap bg-lime-500/10">
+            <i class="fa-solid fa-list-ol text-lime-400 text-base"></i>
+        </div>
+        <h3>Number Pages</h3>
+        <p>Stamp page numbers at any position.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.header_footer') }}" class="tool-card">
+        <div class="icon-wrap bg-yellow-500/10">
+            <i class="fa-solid fa-heading text-yellow-400 text-base"></i>
+        </div>
+        <h3>Header &amp; Footer</h3>
+        <p>Add centred header and footer text.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.sign_pdf') }}" class="tool-card">
+        <div class="icon-wrap bg-emerald-500/10">
+            <i class="fa-solid fa-signature text-emerald-400 text-base"></i>
+        </div>
+        <h3>Sign PDF</h3>
+        <p>Add a visible signature box to the last page.</p>
+    </a>
+
 </div>
+
+<p class="section-label">PDF — Convert</p>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
+
+    <a href="{{ url_for('pdf_toolkit.conversion_home') }}" class="tool-card">
+        <div class="icon-wrap bg-orange-500/10">
+            <i class="fa-solid fa-file-export text-orange-400 text-base"></i>
+        </div>
+        <h3>PDF → Word / Excel</h3>
+        <p>Convert PDF to Word, Excel, CSV or images.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.to_pptx') }}" class="tool-card">
+        <div class="icon-wrap bg-red-500/10">
+            <i class="fa-solid fa-file-powerpoint text-red-400 text-base"></i>
+        </div>
+        <h3>PDF → PowerPoint</h3>
+        <p>Turn each PDF page into a PPTX slide.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.office_to_pdf') }}" class="tool-card">
+        <div class="icon-wrap bg-blue-500/10">
+            <i class="fa-solid fa-file-word text-blue-400 text-base"></i>
+        </div>
+        <h3>Office → PDF</h3>
+        <p>Convert Word, Excel or PowerPoint to PDF.</p>
+    </a>
+
+</div>
+
+<p class="section-label">PDF — Other</p>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
+
+    <a href="{{ url_for('pdf_toolkit.ocr') }}" class="tool-card">
+        <div class="icon-wrap bg-indigo-500/10">
+            <i class="fa-solid fa-magnifying-glass text-indigo-400 text-base"></i>
+        </div>
+        <h3>OCR</h3>
+        <p>Extract text from images and scanned PDFs.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.security') }}" class="tool-card">
+        <div class="icon-wrap bg-red-500/10">
+            <i class="fa-solid fa-shield-halved text-red-400 text-base"></i>
+        </div>
+        <h3>Security</h3>
+        <p>Password-protect or unlock PDF files.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.editor') }}" class="tool-card">
+        <div class="icon-wrap bg-purple-500/10">
+            <i class="fa-solid fa-pen-nib text-purple-400 text-base"></i>
+        </div>
+        <h3>Edit PDF</h3>
+        <p>Edit text content in a PDF.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.compare') }}" class="tool-card">
+        <div class="icon-wrap bg-cyan-500/10">
+            <i class="fa-solid fa-code-compare text-cyan-400 text-base"></i>
+        </div>
+        <h3>Compare PDFs</h3>
+        <p>Diff two PDF files side by side.</p>
+    </a>
+
+    <a href="{{ url_for('pdf_toolkit.ai') }}" class="tool-card">
+        <div class="icon-wrap bg-violet-500/10">
+            <i class="fa-solid fa-robot text-violet-400 text-base"></i>
+        </div>
+        <h3>AI Assistant</h3>
+        <p>Chat and summarise PDFs via Ollama.</p>
+    </a>
+
+    <a href="/pdf/to-images" class="tool-card">
+        <div class="icon-wrap bg-blue-500/10">
+            <i class="fa-solid fa-file-image text-blue-400 text-base"></i>
+        </div>
+        <h3>PDF to Images</h3>
+        <p>Convert each page of a PDF to PNG or JPG. Downloads as a ZIP.</p>
+    </a>
+
+</div>
+</div><!-- end data-category="pdf" -->
+
+<!-- ── Image ─────────────────────────────────────────────────────────── -->
+<div data-category="image">
+<p class="section-label">Image</p>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
+
+    <a href="{{ url_for('image_toolkit.convert') }}" class="tool-card">
+        <div class="icon-wrap bg-sky-500/10">
+            <i class="fa-solid fa-arrows-rotate text-sky-400 text-base"></i>
+        </div>
+        <h3>Convert Format</h3>
+        <p>PNG ↔ JPG ↔ WEBP ↔ BMP ↔ TIFF</p>
+    </a>
+
+    <a href="{{ url_for('image_toolkit.compress') }}" class="tool-card">
+        <div class="icon-wrap bg-green-500/10">
+            <i class="fa-solid fa-compress text-green-400 text-base"></i>
+        </div>
+        <h3>Compress Image</h3>
+        <p>Reduce file size with adjustable quality.</p>
+    </a>
+
+    <a href="{{ url_for('image_toolkit.resize') }}" class="tool-card">
+        <div class="icon-wrap bg-amber-500/10">
+            <i class="fa-solid fa-up-right-and-down-left-from-center text-amber-400 text-base"></i>
+        </div>
+        <h3>Resize Image</h3>
+        <p>Scale to custom width × height.</p>
+    </a>
+
+    <a href="{{ url_for('image_toolkit.rotate') }}" class="tool-card">
+        <div class="icon-wrap bg-rose-500/10">
+            <i class="fa-solid fa-rotate-right text-rose-400 text-base"></i>
+        </div>
+        <h3>Rotate &amp; Flip</h3>
+        <p>Rotate 90°/180°/270° or flip.</p>
+    </a>
+
+    <a href="{{ url_for('image_toolkit.to_pdf') }}" class="tool-card">
+        <div class="icon-wrap bg-red-500/10">
+            <i class="fa-solid fa-file-pdf text-red-400 text-base"></i>
+        </div>
+        <h3>Images → PDF</h3>
+        <p>Combine PNG/JPG images into a PDF.</p>
+    </a>
+
+    <a href="/image/crop" class="tool-card">
+        <div class="icon-wrap bg-amber-500/10">
+            <i class="fa-solid fa-crop-simple text-amber-400 text-base"></i>
+        </div>
+        <h3>Crop Image</h3>
+        <p>Trim an image to a specific area by pixel coordinates.</p>
+    </a>
+
+    <a href="/image/watermark" class="tool-card">
+        <div class="icon-wrap bg-amber-500/10">
+            <i class="fa-solid fa-stamp text-amber-400 text-base"></i>
+        </div>
+        <h3>Watermark Image</h3>
+        <p>Add a text watermark to protect or brand your images.</p>
+    </a>
+
+    <a href="/image/collage" class="tool-card">
+        <div class="icon-wrap bg-amber-500/10">
+            <i class="fa-solid fa-table-cells-large text-amber-400 text-base"></i>
+        </div>
+        <h3>Image Collage</h3>
+        <p>Combine multiple images side-by-side, stacked, or in a grid.</p>
+    </a>
+
+    <a href="/image/remove-bg" class="tool-card">
+        <div class="icon-wrap bg-purple-500/10">
+            <i class="fa-solid fa-wand-magic-sparkles text-purple-400 text-base"></i>
+        </div>
+        <h3>Remove Background</h3>
+        <p>AI-powered background removal — returns a transparent PNG.</p>
+    </a>
+
+    <a href="/image/blur-faces" class="tool-card">
+        <div class="icon-wrap bg-amber-500/10">
+            <i class="fa-solid fa-user-shield text-amber-400 text-base"></i>
+        </div>
+        <h3>Blur Faces</h3>
+        <p>Auto-detect and blur all faces for privacy before sharing photos.</p>
+    </a>
+
+</div>
+</div><!-- end data-category="image" -->
+
+<!-- ── Resume ────────────────────────────────────────────────────────────── -->
+<div data-category="resume">
+<p class="section-label">Resume</p>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-8">
+
+    <a href="/resume/" class="tool-card">
+        <div class="icon-wrap bg-indigo-500/10">
+            <i class="fa-solid fa-file-lines text-indigo-400 text-base"></i>
+        </div>
+        <h3>Resume Maker</h3>
+        <p>Build a professional resume with live preview and PDF download.</p>
+    </a>
+
+    <a href="/cover-letter/" class="tool-card">
+        <div class="icon-wrap bg-indigo-500/10">
+            <i class="fa-solid fa-envelope-open-text text-indigo-400 text-base"></i>
+        </div>
+        <h3>Cover Letter Maker</h3>
+        <p>Write a polished cover letter with live preview and PDF download.</p>
+    </a>
+
+    <a href="/invoice/" class="tool-card">
+        <div class="icon-wrap bg-indigo-500/10">
+            <i class="fa-solid fa-file-invoice-dollar text-indigo-400 text-base"></i>
+        </div>
+        <h3>Invoice Generator</h3>
+        <p>Create professional invoices with line items, tax, and PDF download.</p>
+    </a>
+
+</div>
+</div><!-- end data-category="resume" -->
 
 {% endblock %}

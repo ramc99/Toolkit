@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Watermark Image{% endblock %}
+{% block content %}
+<div class="breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/image/">Image Tools</a><span class="sep">/</span><span>Watermark Image</span></div>
+<div class="flex items-center gap-3 mb-6">
+  <div class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-400" style="background:rgba(251,191,36,.1)">
+    <i class="fa-solid fa-stamp"></i>
+  </div>
+  <div>
+    <h1 class="page-title" style="margin-bottom:0">Watermark Image</h1>
+    <p style="font-size:13px;color:var(--muted)">Add a text watermark to protect your images.</p>
+  </div>
+</div>
+<div id="upload-section" class="tool-page-card">
+  <form id="tool-form" enctype="multipart/form-data" class="space-y-4">
+    <div>
+      <label class="form-label">Image File</label>
+      <div class="file-zone">
+        <input type="file" name="file" accept=".png,.jpg,.jpeg,.webp,.bmp,.tiff" required>
+        <i class="fa-solid fa-image text-2xl mb-1" style="color:var(--muted)"></i>
+        <div class="text-xs mt-1" style="color:var(--muted)"><strong style="color:var(--accent)">Click to browse</strong> or drag &amp; drop</div>
+      </div>
+    </div>
+    <div><label class="form-label">Watermark Text</label><input type="text" name="text" placeholder="© Your Name 2026" class="form-input" required></div>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="form-label">Position</label>
+        <select name="position" class="form-input">
+          <option value="center">Center</option>
+          <option value="bottom-right">Bottom Right</option>
+          <option value="bottom-left">Bottom Left</option>
+          <option value="top-right">Top Right</option>
+          <option value="top-left">Top Left</option>
+        </select>
+      </div>
+      <div><label class="form-label">Font Size (px)</label><input type="number" name="font_size" value="36" min="10" max="200" class="form-input"></div>
+      <div><label class="form-label">Opacity (%)</label><input type="range" name="opacity" min="5" max="100" value="40" class="w-full" oninput="document.getElementById('op-val').textContent=this.value+'%'"><span id="op-val" class="text-xs" style="color:var(--muted)">40%</span></div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-full"><i class="fa-solid fa-stamp"></i> Add Watermark</button>
+  </form>
+</div>
+<div id="loading-section" class="hidden tool-page-card text-center py-10">
+  <div class="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-4" style="border-color:var(--card-border);border-top-color:var(--accent)"></div>
+  <p style="color:var(--muted);font-size:13px">Adding watermark…</p>
+</div>
+{% include 'image_comparison.html' %}
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Image Collage{% endblock %}
+{% block content %}
+<div class="breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/image/">Image Tools</a><span class="sep">/</span><span>Image Collage</span></div>
+<div class="flex items-center gap-3 mb-6">
+  <div class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-400" style="background:rgba(251,191,36,.1)">
+    <i class="fa-solid fa-table-cells-large"></i>
+  </div>
+  <div>
+    <h1 class="page-title" style="margin-bottom:0">Image Collage</h1>
+    <p style="font-size:13px;color:var(--muted)">Combine multiple images into one — side-by-side, stacked, or grid.</p>
+  </div>
+</div>
+<div class="tool-page-card">
+  <form id="tool-form" method="POST" enctype="multipart/form-data" class="space-y-4">
+    <div>
+      <label class="form-label">Images (select 2 or more)</label>
+      <div class="file-zone">
+        <input type="file" name="files" accept=".png,.jpg,.jpeg,.webp,.bmp" multiple required>
+        <i class="fa-solid fa-images text-2xl mb-1" style="color:var(--muted)"></i>
+        <div class="text-xs mt-1" style="color:var(--muted)"><strong style="color:var(--accent)">Click to browse</strong> or drag &amp; drop — hold Ctrl/Cmd to select multiple</div>
+      </div>
+      <p id="file-count" class="text-xs mt-1" style="color:var(--muted)"></p>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="form-label">Layout</label>
+        <select name="layout" class="form-input">
+          <option value="horizontal">Horizontal (side by side)</option>
+          <option value="vertical">Vertical (stacked)</option>
+          <option value="grid">Grid (2 columns)</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Gap (px)</label>
+        <input type="number" name="gap" value="10" min="0" max="100" class="form-input">
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-full"><i class="fa-solid fa-table-cells-large"></i> Create Collage</button>
+  </form>
+</div>
+<div id="loading-section" class="hidden tool-page-card text-center py-10">
+  <div class="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-4" style="border-color:var(--card-border);border-top-color:var(--accent)"></div>
+  <p style="color:var(--muted);font-size:13px">Creating collage…</p>
+</div>
+<div id="result-section" class="hidden tool-page-card text-center py-8">
+  <i class="fa-solid fa-check-circle text-3xl mb-3" style="color:var(--accent)"></i>
+  <p class="font-medium mb-3" style="color:var(--text)">Collage ready!</p>
+  <a id="download-link" href="#" class="btn btn-primary"><i class="fa-solid fa-download"></i> Download Collage</a>
+</div>
+<script>
+document.querySelector('input[type=file]').addEventListener('change', function() {
+  document.getElementById('file-count').textContent = this.files.length + ' file(s) selected';
+});
+const form = document.getElementById('tool-form');
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  document.getElementById('loading-section').classList.remove('hidden');
+  form.classList.add('hidden');
+  const res = await fetch('/image/collage', { method: 'POST', body: new FormData(form) });
+  document.getElementById('loading-section').classList.add('hidden');
+  if (res.ok) {
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    document.getElementById('download-link').href = url;
+    document.getElementById('download-link').download = 'collage.jpg';
+    document.getElementById('result-section').classList.remove('hidden');
+  } else {
+    form.classList.remove('hidden');
+    alert('Error: ' + await res.text());
+  }
+});
+</script>
+{% endblock %}

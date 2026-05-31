@@ -1,0 +1,513 @@
+{% extends 'base.html' %}
+{% block title %}Compress Image{% endblock %}
+{% block content %}
+
+<div class="breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/image/">Image Tools</a><span class="sep">/</span><span>Compress Image</span></div>
+
+<div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-green-400" style="background:rgba(34,197,94,.1)">
+        <i class="fa-solid fa-compress"></i>
+    </div>
+    <div>
+        <h1 class="page-title" style="margin-bottom:0">Compress Image</h1>
+        <p style="font-size:13px;color:var(--muted)">Reduce file size with live before/after preview. Adjust quality, format and more.</p>
+    </div>
+</div>
+
+<!-- ── Upload section ───────────────────────────────────────────────── -->
+<div id="uploadSection" class="tool-page-card" style="max-width:540px">
+    <div id="dropZone" class="file-zone" style="cursor:pointer;min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+        <i class="fa-solid fa-cloud-arrow-up text-3xl" style="color:var(--muted)"></i>
+        <div style="font-size:13px;color:var(--muted)">
+            <strong style="color:var(--accent)">Click to browse</strong> or drag &amp; drop
+        </div>
+        <div style="font-size:11px;color:var(--muted)">JPG, PNG, WEBP &nbsp;·&nbsp; max 25 MB</div>
+        <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+    </div>
+
+    <!-- Selected file preview -->
+    <div id="selectedFile" class="hidden mt-3 flex items-center gap-3 px-3 py-2 rounded-lg" style="background:var(--file-zone-bg);border:1px solid var(--card-border)">
+        <img id="thumbImg" src="" alt="" class="w-10 h-10 rounded object-cover flex-shrink-0">
+        <div class="flex-1 min-w-0">
+            <div id="fileName" class="text-sm font-medium truncate" style="color:var(--text)"></div>
+            <div id="fileSize" class="text-xs" style="color:var(--muted)"></div>
+        </div>
+        <button id="removeBtn" class="w-7 h-7 rounded-md flex items-center justify-center transition-colors flex-shrink-0" style="color:var(--muted)">
+            <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+    </div>
+
+    <button id="compressBtn" disabled
+        class="btn btn-primary btn-full mt-4" style="opacity:.5">
+        <i class="fa-solid fa-compress"></i> Compress Image
+    </button>
+</div>
+
+<!-- ── Loading section ──────────────────────────────────────────────── -->
+<div id="loadingSection" class="hidden tool-page-card text-center py-10" style="max-width:540px">
+    <div class="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-3"
+         style="border-color:var(--card-border);border-top-color:var(--accent)"></div>
+    <p id="loadingText" style="color:var(--muted);font-size:13px">Uploading…</p>
+    <div class="mt-3 rounded-full overflow-hidden h-1.5 w-48 mx-auto" style="background:var(--card-border)">
+        <div id="progressFill" class="h-full rounded-full transition-all duration-200" style="width:0%;background:var(--accent)"></div>
+    </div>
+</div>
+
+<!-- ── Results section ──────────────────────────────────────────────── -->
+<div id="resultsSection" class="hidden mt-6 space-y-4">
+
+    <!-- Stats bar -->
+    <div class="tool-page-card" style="max-width:none">
+        <div class="flex items-center gap-6 flex-wrap">
+            <div>
+                <div class="text-xs mb-0.5" style="color:var(--muted)">Original</div>
+                <div class="font-semibold" style="font-size:16px" id="statOriginal">—</div>
+                <div class="text-xs" style="color:var(--muted)" id="statOrigDim"></div>
+            </div>
+            <i class="fa-solid fa-arrow-right text-lg flex-1 text-center" style="color:var(--muted)"></i>
+            <div>
+                <div class="text-xs mb-0.5" style="color:var(--muted)">Result</div>
+                <div class="font-semibold text-green-400" style="font-size:16px" id="statCompressed">—</div>
+                <div class="text-xs" style="color:var(--muted)" id="statOutDim"></div>
+            </div>
+            <div id="statBadge" class="ml-auto px-3 py-1 rounded-full text-xs font-bold hidden"
+                 style="background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.25)"></div>
+        </div>
+    </div>
+
+    <!-- Before / After + Controls -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <!-- Controls panel -->
+        <div class="tool-page-card space-y-4" id="controlsPanel">
+            <div class="flex items-center justify-between">
+                <span class="font-semibold text-sm" style="color:var(--text)">Settings</span>
+                <button id="resetControls" class="text-xs" style="color:var(--accent)">Reset</button>
+            </div>
+
+            <!-- Quality -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="form-label" style="margin-bottom:0">Quality</label>
+                    <span class="text-xs font-semibold" style="color:var(--accent)" id="qualityVal">72</span>
+                </div>
+                <input type="range" id="quality" min="1" max="100" value="72"
+                    class="w-full" style="accent-color:var(--accent)">
+                <div class="flex justify-between text-xs mt-0.5" style="color:var(--muted)">
+                    <span>Smallest</span><span>100 = original</span>
+                </div>
+            </div>
+
+            <!-- Format -->
+            <div>
+                <label class="form-label">Output Format</label>
+                <div id="formatPicker" class="flex gap-2">
+                    {% for fmt in ['jpg','png','webp'] %}
+                    <button class="fmt-btn flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-colors {% if fmt == 'jpg' %}active{% endif %}"
+                            data-fmt="{{ fmt }}"
+                            style="border-color:var(--card-border);color:var(--muted)">
+                        {{ fmt.upper() }}
+                    </button>
+                    {% endfor %}
+                </div>
+                <div id="pngWarning" class="hidden mt-2 flex items-start gap-2 rounded-lg px-2 py-1.5 text-xs"
+                     style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:#fbbf24">
+                    <i class="fa-solid fa-triangle-exclamation flex-shrink-0 mt-0.5"></i>
+                    <span>PNG is lossless — file size will be larger than JPG. Use JPG or WEBP to reduce size.</span>
+                </div>
+            </div>
+
+            <!-- Advanced toggle -->
+            <div>
+                <button id="advToggle" class="flex items-center gap-2 text-xs font-semibold w-full py-1" style="color:var(--muted)">
+                    <i id="advIcon" class="fa-solid fa-chevron-right text-xs transition-transform"></i>
+                    Advanced Settings
+                </button>
+                <div id="advPanel" class="hidden mt-3 space-y-4">
+
+                    <!-- Resize -->
+                    <div>
+                        <label class="form-label">Resize</label>
+                        <div class="space-y-1">
+                            {% for val, lbl in [('none','None'),('percentage','By %'),('custom','Custom px')] %}
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="resizeMode" value="{{ val }}" {% if val=='none' %}checked{% endif %}
+                                    style="accent-color:var(--accent)">
+                                <span class="text-xs" style="color:var(--text)">{{ lbl }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <div id="resizePctPanel" class="hidden mt-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs" style="color:var(--muted)">Scale</span>
+                                <span class="text-xs font-semibold" style="color:var(--accent)" id="resizePctVal">100%</span>
+                            </div>
+                            <input type="range" id="resizePctSlider" min="10" max="200" value="100" class="w-full" style="accent-color:var(--accent)">
+                        </div>
+                        <div id="resizeCustomPanel" class="hidden mt-2 flex gap-2 items-end">
+                            <div class="flex-1">
+                                <label class="form-label">W (px)</label>
+                                <input type="number" id="resizeW" placeholder="—" class="form-input" style="padding:.35rem .6rem">
+                            </div>
+                            <button id="lockBtn" class="w-8 h-8 rounded-lg flex items-center justify-center mb-0.5 flex-shrink-0 transition-colors" style="background:var(--card-border);color:var(--accent)" title="Lock aspect ratio">
+                                <i id="lockIcon" class="fa-solid fa-lock text-xs"></i>
+                            </button>
+                            <div class="flex-1">
+                                <label class="form-label">H (px)</label>
+                                <input type="number" id="resizeH" placeholder="—" class="form-input" style="padding:.35rem .6rem">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Brightness -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="form-label" style="margin-bottom:0">Brightness</label>
+                            <span class="text-xs font-semibold" style="color:var(--accent)" id="brightnessVal">1.0</span>
+                        </div>
+                        <input type="range" id="brightness" min="0.1" max="3" value="1" step="0.05" class="w-full" style="accent-color:var(--accent)">
+                    </div>
+
+                    <!-- Contrast -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="form-label" style="margin-bottom:0">Contrast</label>
+                            <span class="text-xs font-semibold" style="color:var(--accent)" id="contrastVal">1.0</span>
+                        </div>
+                        <input type="range" id="contrast" min="0.1" max="3" value="1" step="0.05" class="w-full" style="accent-color:var(--accent)">
+                    </div>
+
+                    <!-- Sharpness -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="form-label" style="margin-bottom:0">Sharpness</label>
+                            <span class="text-xs font-semibold" style="color:var(--accent)" id="sharpnessVal">1.0</span>
+                        </div>
+                        <input type="range" id="sharpness" min="0" max="3" value="1" step="0.05" class="w-full" style="accent-color:var(--accent)">
+                    </div>
+
+                    <!-- Blur -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="form-label" style="margin-bottom:0">Blur</label>
+                            <span class="text-xs font-semibold" style="color:var(--accent)" id="blurVal">0</span>
+                        </div>
+                        <input type="range" id="blur" min="0" max="20" value="0" step="0.5" class="w-full" style="accent-color:var(--accent)">
+                    </div>
+
+                    <button id="applyBtn" class="btn btn-primary btn-full text-xs py-2">
+                        <i class="fa-solid fa-check"></i> Apply Settings
+                    </button>
+                    <p class="text-xs text-center" style="color:var(--muted)">Auto-applies 800 ms after changes</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Before / After images -->
+        <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="tool-page-card" style="max-width:none">
+                <div class="text-xs font-semibold mb-3 uppercase tracking-wide" style="color:var(--muted)">Before</div>
+                <div class="rounded-lg overflow-hidden flex items-center justify-center" style="background:rgba(0,0,0,.05);min-height:180px">
+                    <img id="imgOriginal" src="" alt="Original" class="max-w-full max-h-64 object-contain rounded">
+                </div>
+                <div class="text-xs mt-2" style="color:var(--muted)" id="footOriginal">—</div>
+            </div>
+            <div class="tool-page-card" style="max-width:none;position:relative">
+                <div class="text-xs font-semibold mb-3 uppercase tracking-wide" style="color:#4ade80">After</div>
+                <div class="rounded-lg overflow-hidden flex items-center justify-center" style="background:rgba(0,0,0,.05);min-height:180px;position:relative">
+                    <img id="imgCompressed" src="" alt="Compressed" class="max-w-full max-h-64 object-contain rounded">
+                    <div id="previewOverlay" class="hidden absolute inset-0 flex items-center justify-center rounded-lg" style="background:rgba(0,0,0,.4)">
+                        <div class="w-8 h-8 border-4 rounded-full animate-spin" style="border-color:rgba(255,255,255,.2);border-top-color:#fff"></div>
+                    </div>
+                </div>
+                <div class="text-xs mt-2" style="color:var(--muted)" id="footCompressed">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-3 flex-wrap">
+        <a id="downloadBtn" href="#" class="btn btn-primary">
+            <i class="fa-solid fa-download"></i> Download
+        </a>
+        <button id="newBtn" class="btn" style="background:var(--card-border);color:var(--text)">
+            <i class="fa-solid fa-rotate-left"></i> Compress Another
+        </button>
+    </div>
+</div>
+
+<!-- Error toast -->
+<div id="errorToast" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm z-50"
+     style="background:#18181b;border:1px solid #3f3f46;color:#fafafa;max-width:380px">
+    <i class="fa-solid fa-triangle-exclamation text-amber-400 flex-shrink-0"></i>
+    <span id="toastMsg" class="flex-1"></span>
+    <button id="toastClose" class="ml-1 text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+</div>
+
+<style>
+    .fmt-btn.active { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
+    #lockBtn.locked { background: rgba(99,102,241,.15); color: var(--accent); }
+</style>
+
+<script>
+(function() {
+/* ── Element refs ─────────────────────────────────────────────────── */
+const dropZone       = document.getElementById('dropZone');
+const fileInput      = document.getElementById('fileInput');
+const selectedFile   = document.getElementById('selectedFile');
+const thumbImg       = document.getElementById('thumbImg');
+const fileNameEl     = document.getElementById('fileName');
+const fileSizeEl     = document.getElementById('fileSize');
+const removeBtn      = document.getElementById('removeBtn');
+const compressBtn    = document.getElementById('compressBtn');
+const uploadSection  = document.getElementById('uploadSection');
+const loadingSection = document.getElementById('loadingSection');
+const resultsSection = document.getElementById('resultsSection');
+const progressFill   = document.getElementById('progressFill');
+const loadingText    = document.getElementById('loadingText');
+
+const statOriginal   = document.getElementById('statOriginal');
+const statCompressed = document.getElementById('statCompressed');
+const statBadge      = document.getElementById('statBadge');
+const statOrigDim    = document.getElementById('statOrigDim');
+const statOutDim     = document.getElementById('statOutDim');
+const imgOriginal    = document.getElementById('imgOriginal');
+const imgCompressed  = document.getElementById('imgCompressed');
+const footOriginal   = document.getElementById('footOriginal');
+const footCompressed = document.getElementById('footCompressed');
+const previewOverlay = document.getElementById('previewOverlay');
+const downloadBtn    = document.getElementById('downloadBtn');
+const newBtn         = document.getElementById('newBtn');
+
+const qualitySlider  = document.getElementById('quality');
+const qualityVal     = document.getElementById('qualityVal');
+const formatPicker   = document.getElementById('formatPicker');
+const resizeModeRadios = document.querySelectorAll('input[name="resizeMode"]');
+const resizePctPanel = document.getElementById('resizePctPanel');
+const resizeCustomPanel = document.getElementById('resizeCustomPanel');
+const resizePctSlider = document.getElementById('resizePctSlider');
+const resizePctVal   = document.getElementById('resizePctVal');
+const resizeW        = document.getElementById('resizeW');
+const resizeH        = document.getElementById('resizeH');
+const lockBtn        = document.getElementById('lockBtn');
+const lockIcon       = document.getElementById('lockIcon');
+const brightnessSlider = document.getElementById('brightness');
+const brightnessVal  = document.getElementById('brightnessVal');
+const contrastSlider = document.getElementById('contrast');
+const contrastVal    = document.getElementById('contrastVal');
+const sharpnessSlider = document.getElementById('sharpness');
+const sharpnessVal   = document.getElementById('sharpnessVal');
+const blurSlider     = document.getElementById('blur');
+const blurVal        = document.getElementById('blurVal');
+const applyBtn       = document.getElementById('applyBtn');
+const resetControls  = document.getElementById('resetControls');
+const advToggle      = document.getElementById('advToggle');
+const advPanel       = document.getElementById('advPanel');
+const advIcon        = document.getElementById('advIcon');
+const errorToast     = document.getElementById('errorToast');
+const toastMsg       = document.getElementById('toastMsg');
+const toastClose     = document.getElementById('toastClose');
+
+/* ── State ────────────────────────────────────────────────────────── */
+let pendingFile    = null;
+let currentFileId  = null;
+let origDims       = { w: 0, h: 0 };
+let lockAspect     = true;
+let applyTimer     = null;
+let isApplying     = false;
+const MAX_BYTES    = 25 * 1024 * 1024;
+
+/* ── Drag-drop / pick ─────────────────────────────────────────────── */
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--accent)'; });
+dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = ''; });
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.style.borderColor = ''; if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+    const allowed = new Set(['image/jpeg','image/png','image/webp']);
+    if (!allowed.has(file.type)) { showError('Only JPG, PNG and WEBP are supported.'); return; }
+    if (file.size > MAX_BYTES)   { showError('File too large — max 25 MB.'); return; }
+    hideError();
+    pendingFile = file;
+    const reader = new FileReader();
+    reader.onload = e => { thumbImg.src = e.target.result; };
+    reader.readAsDataURL(file);
+    fileNameEl.textContent = file.name;
+    fileSizeEl.textContent = fmtBytes(file.size);
+    selectedFile.classList.remove('hidden');
+    compressBtn.disabled = false;
+    compressBtn.style.opacity = '1';
+}
+removeBtn.addEventListener('click', e => { e.stopPropagation(); resetUpload(); });
+function resetUpload() {
+    pendingFile = null; fileInput.value = ''; thumbImg.src = '';
+    selectedFile.classList.add('hidden');
+    compressBtn.disabled = true; compressBtn.style.opacity = '.5';
+}
+
+/* ── Upload ───────────────────────────────────────────────────────── */
+compressBtn.addEventListener('click', startUpload);
+function startUpload() {
+    if (!pendingFile) return;
+    show(loadingSection); hide(uploadSection); hide(resultsSection);
+    setProgress(0); loadingText.textContent = 'Uploading…';
+    const fd = new FormData(); fd.append('file', pendingFile);
+    const xhr = new XMLHttpRequest();
+    xhr.upload.addEventListener('progress', e => { if (e.lengthComputable) setProgress(e.loaded / e.total * 78); });
+    xhr.upload.addEventListener('load', () => { setProgress(82); loadingText.textContent = 'Compressing…'; });
+    xhr.addEventListener('load', () => {
+        setProgress(100);
+        let data; try { data = JSON.parse(xhr.responseText); } catch { onUploadError('Unexpected server response.'); return; }
+        if (xhr.status !== 200 || data.error) { onUploadError(data.error || 'Upload failed.'); return; }
+        setTimeout(() => { hide(loadingSection); initResults(data); }, 300);
+    });
+    xhr.addEventListener('error', () => onUploadError('Network error.'));
+    xhr.open('POST', '/image/compress-upload'); xhr.send(fd);
+}
+function onUploadError(msg) { hide(loadingSection); show(uploadSection); showError(msg); setProgress(0); }
+
+/* ── Init results ─────────────────────────────────────────────────── */
+function initResults(data) {
+    currentFileId = data.file_id;
+    origDims = { w: data.orig_width, h: data.orig_height };
+    statOriginal.textContent = data.original_size_str;
+    statOrigDim.textContent  = `${data.orig_width} × ${data.orig_height}`;
+    updateStats(data.compressed_size_str, data.reduction_percent, data.orig_width, data.orig_height);
+    imgOriginal.src   = data.original_url;
+    imgCompressed.src = data.compressed_url + '?t=' + Date.now();
+    footOriginal.textContent = `${data.original_size_str} · ${data.orig_width}×${data.orig_height}`;
+    footCompressed.textContent = data.compressed_size_str;
+    downloadBtn.href = data.download_url;
+    const ext = data.orig_ext === 'jpeg' ? 'jpg' : data.orig_ext;
+    setFmt(ext);
+    qualitySlider.value = 60; qualityVal.textContent = 60;
+    show(resultsSection);
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function updateStats(sizeStr, pct, w, h) {
+    statCompressed.textContent = sizeStr;
+    statOutDim.textContent = w && h ? `${w} × ${h}` : '';
+    const badge = statBadge;
+    badge.textContent = pct >= 0 ? `−${pct}%` : `+${Math.abs(pct)}%`;
+    badge.style.background = pct >= 0 ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)';
+    badge.style.color       = pct >= 0 ? '#4ade80' : '#f87171';
+    badge.style.borderColor = pct >= 0 ? 'rgba(34,197,94,.25)' : 'rgba(239,68,68,.25)';
+    badge.classList.remove('hidden');
+}
+
+/* ── Advanced settings toggle ────────────────────────────────────── */
+advToggle.addEventListener('click', () => {
+    advPanel.classList.toggle('hidden');
+    advIcon.style.transform = advPanel.classList.contains('hidden') ? '' : 'rotate(90deg)';
+});
+
+/* ── Controls wiring ─────────────────────────────────────────────── */
+qualitySlider.addEventListener('input', () => { qualityVal.textContent = qualitySlider.value; scheduleApply(); });
+
+formatPicker.addEventListener('click', e => {
+    const btn = e.target.closest('.fmt-btn'); if (!btn) return;
+    setFmt(btn.dataset.fmt); scheduleApply();
+});
+const pngWarning = document.getElementById('pngWarning');
+function setFmt(fmt) {
+    formatPicker.querySelectorAll('.fmt-btn').forEach(b => b.classList.toggle('active', b.dataset.fmt === fmt));
+    pngWarning.classList.toggle('hidden', fmt !== 'png');
+}
+function getFmt() { return formatPicker.querySelector('.fmt-btn.active')?.dataset.fmt || 'jpg'; }
+
+resizeModeRadios.forEach(r => r.addEventListener('change', () => {
+    const m = getResizeMode();
+    resizePctPanel.classList.toggle('hidden', m !== 'percentage');
+    resizeCustomPanel.classList.toggle('hidden', m !== 'custom');
+    scheduleApply();
+}));
+function getResizeMode() { return [...resizeModeRadios].find(r => r.checked)?.value || 'none'; }
+
+resizePctSlider.addEventListener('input', () => { resizePctVal.textContent = resizePctSlider.value + '%'; scheduleApply(); });
+
+lockBtn.addEventListener('click', () => {
+    lockAspect = !lockAspect;
+    lockBtn.classList.toggle('locked', lockAspect);
+    lockIcon.className = lockAspect ? 'fa-solid fa-lock text-xs' : 'fa-solid fa-lock-open text-xs';
+});
+lockBtn.classList.add('locked');
+
+resizeW.addEventListener('input', () => {
+    if (lockAspect && origDims.w && resizeW.value) resizeH.value = Math.round(origDims.h * parseInt(resizeW.value) / origDims.w);
+    scheduleApply();
+});
+resizeH.addEventListener('input', () => {
+    if (lockAspect && origDims.h && resizeH.value) resizeW.value = Math.round(origDims.w * parseInt(resizeH.value) / origDims.h);
+    scheduleApply();
+});
+
+function wireSlider(sl, vl, dec=1) { sl.addEventListener('input', () => { vl.textContent = parseFloat(sl.value).toFixed(dec); scheduleApply(); }); }
+wireSlider(brightnessSlider, brightnessVal);
+wireSlider(contrastSlider,   contrastVal);
+wireSlider(sharpnessSlider,  sharpnessVal);
+wireSlider(blurSlider,       blurVal, 1);
+
+applyBtn.addEventListener('click', () => { clearTimeout(applyTimer); applySettings(); });
+
+resetControls.addEventListener('click', () => {
+    qualitySlider.value = 60; qualityVal.textContent = 60;
+    brightnessSlider.value = 1; brightnessVal.textContent = '1.0';
+    contrastSlider.value   = 1; contrastVal.textContent   = '1.0';
+    sharpnessSlider.value  = 1; sharpnessVal.textContent  = '1.0';
+    blurSlider.value = 0;       blurVal.textContent = '0';
+    resizePctSlider.value = 100; resizePctVal.textContent = '100%';
+    resizeW.value = ''; resizeH.value = '';
+    document.querySelector('input[name="resizeMode"][value="none"]').checked = true;
+    resizePctPanel.classList.add('hidden'); resizeCustomPanel.classList.add('hidden');
+    const ext = imgOriginal.src.split('_orig.')[1]?.split('?')[0] || 'jpg';
+    setFmt(ext === 'jpeg' ? 'jpg' : ext);
+    scheduleApply();
+});
+
+/* ── Apply settings ───────────────────────────────────────────────── */
+function scheduleApply() { if (!currentFileId) return; clearTimeout(applyTimer); applyTimer = setTimeout(applySettings, 800); }
+
+async function applySettings() {
+    if (!currentFileId || isApplying) return;
+    isApplying = true; show(previewOverlay); applyBtn.disabled = true;
+    const mode = getResizeMode();
+    const settings = {
+        file_id: currentFileId, quality: parseInt(qualitySlider.value), format: getFmt(),
+        resize_mode: mode,
+        resize_percent: mode === 'percentage' ? parseInt(resizePctSlider.value) : 100,
+        resize_width:  mode === 'custom' && resizeW.value ? parseInt(resizeW.value) : null,
+        resize_height: mode === 'custom' && resizeH.value ? parseInt(resizeH.value) : null,
+        lock_aspect: lockAspect,
+        brightness: parseFloat(brightnessSlider.value), contrast: parseFloat(contrastSlider.value),
+        sharpness:  parseFloat(sharpnessSlider.value),  blur: parseFloat(blurSlider.value),
+    };
+    try {
+        const res  = await fetch('/image/compress-process', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(settings) });
+        const data = await res.json();
+        if (!res.ok || data.error) { showError(data.error || 'Processing failed.'); return; }
+        imgCompressed.src = data.compressed_url + '?t=' + Date.now();
+        footCompressed.textContent = `${data.compressed_size_str} · ${data.output_width}×${data.output_height}`;
+        updateStats(data.compressed_size_str, data.reduction_percent, data.output_width, data.output_height);
+        downloadBtn.href = data.download_url;
+        hideError();
+    } catch { showError('Network error.'); }
+    finally { isApplying = false; hide(previewOverlay); applyBtn.disabled = false; }
+}
+
+/* ── New upload ───────────────────────────────────────────────────── */
+newBtn.addEventListener('click', () => { currentFileId = null; hide(resultsSection); show(uploadSection); resetUpload(); uploadSection.scrollIntoView({behavior:'smooth',block:'start'}); });
+
+/* ── Toast ────────────────────────────────────────────────────────── */
+function showError(msg) { toastMsg.textContent = msg; errorToast.classList.remove('hidden'); }
+function hideError()    { errorToast.classList.add('hidden'); }
+toastClose.addEventListener('click', hideError);
+
+/* ── Helpers ──────────────────────────────────────────────────────── */
+function show(el) { el.classList.remove('hidden'); }
+function hide(el) { el.classList.add('hidden'); }
+function setProgress(pct) { progressFill.style.width = Math.min(100, pct) + '%'; }
+function fmtBytes(b) { if (b<1024) return b+' B'; if (b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
+})();
+</script>
+{% endblock %}

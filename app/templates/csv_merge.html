@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Merge Files — Toolkit{% endblock %}
+{% block content %}
+
+<nav class="breadcrumb">
+    <a href="/">Home</a>
+    <span class="sep">/</span>
+    <span class="text-[#fafafa]">Merge Files</span>
+</nav>
+
+<div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl bg-emerald-500/12 flex items-center justify-center flex-shrink-0">
+        <i class="fa-solid fa-code-merge text-emerald-400 text-base"></i>
+    </div>
+    <div>
+        <h1 class="page-title" style="margin-bottom:2px">Merge Files</h1>
+        <p class="text-[#a1a1aa] text-sm" style="margin-bottom:0">Stack multiple CSV or TSV files row-by-row and download as a single file.</p>
+    </div>
+</div>
+
+<div class="tool-page-card">
+    <form action="{{ url_for('main.merge_csv_route') }}" method="post" enctype="multipart/form-data">
+
+        <div class="mb-5">
+            <label class="form-label">CSV / TSV Files</label>
+            <div class="file-zone">
+                <input type="file" name="files" accept=".csv,.tsv" multiple required>
+                <div class="text-2xl text-[#52525b] mb-2"><i class="fa-regular fa-copy"></i></div>
+                <div class="text-xs text-[#71717a]">
+                    <span class="text-emerald-400 font-semibold">Click to browse</span> or drag &amp; drop &mdash; select multiple files
+                </div>
+            </div>
+            <p class="file-name text-xs text-[#a1a1aa] mt-1.5 min-h-4"></p>
+        </div>
+
+        <div class="mb-6">
+            <label class="form-label">Output format</label>
+            <input type="hidden" name="format" id="format-val" value="csv">
+            <div class="flex gap-2" id="format-picker">
+                <button type="button" data-val="csv"  class="pick-btn active flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors">CSV</button>
+                <button type="button" data-val="tsv"  class="pick-btn flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors">TSV</button>
+                <button type="button" data-val="pdf"  class="pick-btn flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors">PDF</button>
+            </div>
+        </div>
+
+        <script>
+        document.getElementById('format-picker').addEventListener('click', function(e) {
+            const btn = e.target.closest('.pick-btn'); if (!btn) return;
+            this.querySelectorAll('.pick-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('format-val').value = btn.dataset.val;
+        });
+        </script>
+        <button type="submit" class="btn btn-success btn-full">
+            <i class="fa-solid fa-code-merge"></i> Merge Files
+        </button>
+    </form>
+</div>
+
+<div class="mt-6 flex flex-col gap-2 max-w-[560px]">
+    <div class="flex items-start gap-2.5 text-xs text-[#71717a]">
+        <i class="fa-solid fa-circle-info text-[#6366f1] mt-0.5 flex-shrink-0"></i>
+        <span>Columns are <strong class="text-[#a1a1aa]">union-joined</strong> — missing values fill as blank. File order matches selection order.</span>
+    </div>
+    <div class="flex items-start gap-2.5 text-xs text-[#71717a]">
+        <i class="fa-solid fa-circle-info text-[#6366f1] mt-0.5 flex-shrink-0"></i>
+        <span>PDF output is capped at <strong class="text-[#a1a1aa]">500 rows</strong>. Choose CSV or TSV for full data export.</span>
+    </div>
+</div>
+
+{% endblock %}

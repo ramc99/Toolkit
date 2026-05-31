@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Crop Image{% endblock %}
+{% block content %}
+<div class="breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/image/">Image Tools</a><span class="sep">/</span><span>Crop Image</span></div>
+<div class="flex items-center gap-3 mb-6">
+  <div class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-400" style="background:rgba(251,191,36,.1)">
+    <i class="fa-solid fa-crop-simple"></i>
+  </div>
+  <div>
+    <h1 class="page-title" style="margin-bottom:0">Crop Image</h1>
+    <p style="font-size:13px;color:var(--muted)">Trim an image to a specific area by entering pixel coordinates.</p>
+  </div>
+</div>
+<div id="upload-section" class="tool-page-card">
+  <form id="tool-form" enctype="multipart/form-data" class="space-y-4">
+    <div>
+      <label class="form-label">Image File</label>
+      <div class="file-zone">
+        <input type="file" name="file" accept=".png,.jpg,.jpeg,.webp,.bmp,.tiff" required>
+        <i class="fa-solid fa-image text-2xl mb-1" style="color:var(--muted)"></i>
+        <div class="text-xs mt-1" style="color:var(--muted)"><strong style="color:var(--accent)">Click to browse</strong> or drag &amp; drop</div>
+      </div>
+    </div>
+    <p class="text-xs" style="color:var(--muted)">Set the crop box in pixels. Left/Top = start corner, Right/Bottom = end corner.</p>
+    <div class="grid grid-cols-2 gap-3">
+      <div><label class="form-label">Left (px)</label><input type="number" name="left" min="0" value="0" class="form-input" required></div>
+      <div><label class="form-label">Top (px)</label><input type="number" name="top" min="0" value="0" class="form-input" required></div>
+      <div><label class="form-label">Right (px)</label><input type="number" name="right" min="1" placeholder="image width" class="form-input" required></div>
+      <div><label class="form-label">Bottom (px)</label><input type="number" name="bottom" min="1" placeholder="image height" class="form-input" required></div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-full"><i class="fa-solid fa-crop-simple"></i> Crop Image</button>
+  </form>
+</div>
+<div id="loading-section" class="hidden tool-page-card text-center py-10">
+  <div class="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-4" style="border-color:var(--card-border);border-top-color:var(--accent)"></div>
+  <p style="color:var(--muted);font-size:13px">Cropping…</p>
+</div>
+{% include 'image_comparison.html' %}
+{% endblock %}

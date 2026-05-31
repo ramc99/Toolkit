@@ -17,11 +17,13 @@ def index():
     """Render the home page with split and merge forms."""
     return render_template('index.html')
 
-@bp.route('/split', methods=['POST'])
+@bp.route('/split', methods=['GET', 'POST'])
 def split_csv_route():
-    """Handle CSV splitting based on row count.
+    """Render the Split CSV page (GET) or handle CSV splitting based on row count (POST).
     The user supplies a CSV file and an optional row count.
     """
+    if request.method == 'GET':
+        return render_template('csv_split.html')
     if 'file' not in request.files:
         abort(400, description='No file part in the request')
     file = request.files['file']
@@ -39,9 +41,12 @@ def split_csv_route():
     upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     file.save(upload_path)
 
-    # Read CSV and split
+    # Read CSV and split — wipe any stale parts from a previous run on the same filename
+    import shutil
     split_dir = os.path.join(current_app.config['SPLIT_FOLDER'], os.path.splitext(filename)[0])
-    os.makedirs(split_dir, exist_ok=True)
+    if os.path.exists(split_dir):
+        shutil.rmtree(split_dir)
+    os.makedirs(split_dir)
 
     total_rows = 0
     part_index = 1
@@ -91,13 +96,16 @@ def split_csv_route():
 
     # Provide a summary in a flash message (optional) and send the zip
     flash(f"File split into {part_index - 1} parts, total rows: {total_rows}")
+    current_app.logger.info("Split CSV: %s, rows per split: %d, total rows: %d, zip archive: %s", filename, rows_per_split, total_rows, zip_path)
     return send_file(zip_path, as_attachment=True, download_name=os.path.basename(zip_path))
 
-@bp.route('/merge', methods=['POST'])
+@bp.route('/merge', methods=['GET', 'POST'])
 def merge_csv_route():
-    """Merge multiple CSV/TSV files into a single file.
+    """Render the Merge Files page (GET) or merge multiple CSV/TSV files into a single file (POST).
     The user may request CSV, TSV, or PDF output.
     """
+    if request.method == 'GET':
+        return render_template('csv_merge.html')
     files = request.files.getlist('files')
     if not files:
         abort(400, description='No files uploaded')
@@ -153,4 +161,36 @@ def merge_csv_route():
             pdf.ln()
         pdf.output(out_path)
 
+    current_app.logger.info("Merged CSV/TSV to %s, format: %s, source files: %d", out_path, out_format, len(files))
     return send_file(out_path, as_attachment=True, download_name=os.path.basename(out_path))
+
+@bp.route('/csv-convert', methods=['GET', 'POST'])
+def csv_convert():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            abort(400, description='No file uploaded')
+        f = request.files['file']
+        if f.filename == '':
+            abort(400, description='No file selected')
+        target = request.form.get('target', 'excel')
+        import pandas as pd, io as _io
+        try:
+            df = pd.read_csv(f.stream)
+        except Exception as e:
+            abort(400, description=f'Could not parse CSV: {e}')
+        if target == 'excel':
+            buf = _io.BytesIO()
+            df.to_excel(buf, index=False, engine='openpyxl')
+            buf.seek(0)
+            stem = f.filename.rsplit('.', 1)[0]
+            from flask import send_file
+            return send_file(buf, as_attachment=True, download_name=f'{stem}.xlsx',
+                             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        elif target == 'json':
+            from flask import Response
+            return Response(df.to_json(orient='records', indent=2),
+                            mimetype='application/json',
+                            headers={'Content-Disposition': f'attachment; filename={f.filename.rsplit(".",1)[0]}.json'})
+        else:
+            abort(400, description='Unknown target format')
+    return render_template('csv_convert.html')

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ contact.name }} — Resume</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:    #1c1c2e;
+      --accent: #2563eb;
+      --muted:  #6b7280;
+      --light:  #f3f4f6;
+      --rule:   #e5e7eb;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 9.5pt;
+      color: var(--ink);
+      background: #fff;
+      margin: 0;
+    }
+
+    /* ── Dark header banner ── */
+    .header {
+      background: var(--ink);
+      color: #fff;
+      padding: 22pt 28pt 20pt;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24pt;
+    }
+
+    .hdr-left { flex: 1; }
+
+    .name {
+      font-size: 22pt;
+      font-weight: 800;
+      letter-spacing: -0.3pt;
+      line-height: 1.1;
+      color: #fff;
+    }
+
+    .headline {
+      font-size: 11pt;
+      font-weight: 400;
+      color: var(--accent);
+      margin-top: 4pt;
+    }
+
+    /* Contact items in header */
+    .contact-grid {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4pt;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 5pt;
+      font-size: 8pt;
+      color: #cbd5e1;
+    }
+
+    .cdot {
+      width: 3pt;
+      height: 3pt;
+      background: var(--accent);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Summary strip ── */
+    .summary-strip {
+      background: var(--light);
+      padding: 10pt 28pt;
+      font-size: 9pt;
+      color: #374151;
+      line-height: 1.55;
+      border-bottom: 1pt solid var(--rule);
+    }
+
+    /* ── Body ── */
+    .body {
+      display: flex;
+      padding: 0;
+    }
+
+    /* Left main column */
+    .col-main {
+      flex: 1;
+      padding: 18pt 20pt 20pt 28pt;
+      border-right: 1pt solid var(--rule);
+      min-width: 0;
+    }
+
+    /* Right sidebar column */
+    .col-side {
+      width: 155pt;
+      flex-shrink: 0;
+      padding: 18pt 18pt 20pt 16pt;
+      background: var(--light);
+    }
+
+    /* ── Section heads ── */
+    .sec-head {
+      font-size: 8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2pt;
+      color: var(--accent);
+      margin-top: 18pt;
+      margin-bottom: 8pt;
+      padding-bottom: 4pt;
+      border-bottom: 1.5pt solid var(--accent);
+    }
+    .sec-head:first-child { margin-top: 0; }
+
+    /* ── Experience ── */
+    .exp-item { margin-bottom: 12pt; }
+
+    .exp-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8pt;
+    }
+
+    .exp-role    { font-weight: 700; font-size: 10pt; color: var(--ink); }
+    .exp-dates   { font-size: 8pt; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+    .exp-company { font-size: 9pt; color: var(--muted); margin: 1.5pt 0 4pt; }
+
+    .bullets { list-style: none; padding: 0; }
+    .bullets li {
+      position: relative;
+      padding-left: 10pt;
+      font-size: 9pt;
+      line-height: 1.48;
+      margin-bottom: 2.5pt;
+      color: #374151;
+    }
+    .bullets li::before {
+      content: '';
+      position: absolute;
+      left: 1.5pt;
+      top: 5pt;
+      width: 4pt;
+      height: 4pt;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    /* ── Education ── */
+    .edu-item { margin-bottom: 10pt; }
+    .edu-degree      { font-weight: 700; font-size: 9.5pt; }
+    .edu-institution { font-size: 9pt; color: var(--muted); margin-top: 1pt; }
+    .edu-dates       { font-size: 8pt; color: var(--muted); margin-top: 1.5pt; }
+
+    /* ── Sidebar: skills ── */
+    .skill-item {
+      font-size: 8.5pt;
+      color: #374151;
+      padding: 3pt 0;
+      border-bottom: 0.75pt solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4pt;
+    }
+    .skill-item-name { display: flex; align-items: center; gap: 5pt; }
+    .skill-item-name::before {
+      content: '';
+      width: 5pt;
+      height: 5pt;
+      background: var(--accent);
+      border-radius: 1pt;
+      flex-shrink: 0;
+    }
+    .skill-item-dots { font-size: 7pt; color: var(--accent); letter-spacing: 0.5pt; flex-shrink: 0; }
+    .skill-item:last-child { border-bottom: none; }
+
+    /* ── Projects / Certifications / Awards (main column) ── */
+    .ext-item { margin-bottom: 10pt; }
+    .ext-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8pt; }
+    .ext-title { font-weight: 700; font-size: 9.5pt; color: var(--ink); }
+    .ext-meta  { font-size: 8pt; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+    .ext-sub   { font-size: 8.5pt; color: var(--muted); margin: 1.5pt 0 3pt; }
+    .ext-desc  { font-size: 9pt; color: #374151; line-height: 1.48; }
+    .ext-url   { font-size: 8pt; color: var(--accent); margin-top: 1pt; }
+
+    /* ── Languages (sidebar) ── */
+    .lang-item {
+      font-size: 8.5pt;
+      color: #374151;
+      padding: 3pt 0;
+      border-bottom: 0.75pt solid var(--rule);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .lang-prof { font-size: 7.5pt; color: var(--accent); font-style: italic; }
+    .lang-item:last-child { border-bottom: none; }
+
+    @media print {
+      @page { margin: 0; size: A4; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dark header banner -->
+  <div class="header">
+    <div class="hdr-left">
+      <div class="name">{{ contact.name }}</div>
+      {% if experience %}
+      <div class="headline">{{ experience[0].role }}</div>
+      {% endif %}
+    </div>
+    <div class="contact-grid">
+      {% if contact.email %}
+      <div class="contact-item"><span class="cdot"></span>{{ contact.email }}</div>
+      {% endif %}
+      {% if contact.phone %}
+      <div class="contact-item"><span class="cdot"></span>{{ contact.phone }}</div>
+      {% endif %}
+      {% if contact.location %}
+      <div class="contact-item"><span class="cdot"></span>{{ contact.location }}</div>
+      {% endif %}
+      {% if contact.linkedin %}
+      <div class="contact-item"><span class="cdot"></span>{{ contact.linkedin }}</div>
+      {% endif %}
+      {% if contact.website %}
+      <div class="contact-item"><span class="cdot"></span>{{ contact.website }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Summary strip -->
+  {% if summary %}
+  <div class="summary-strip">{{ summary }}</div>
+  {% endif %}
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- Main column -->
+    <div class="col-main">
+
+      {% if experience %}
+      <div class="sec-head">Experience</div>
+      {% for job in experience %}
+      <div class="exp-item">
+        <div class="exp-top">
+          <span class="exp-role">{{ job.role }}</span>
+          <span class="exp-dates">{{ job.start_date }} — {{ job.end_date }}</span>
+        </div>
+        <div class="exp-company">{{ job.company }}</div>
+        {% if job.bullets %}
+        <ul class="bullets">
+          {% for b in job.bullets %}<li>{{ b }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if education %}
+      <div class="sec-head">Education</div>
+      {% for edu in education %}
+      <div class="edu-item">
+        <div class="edu-degree">{{ edu.degree }}{% if edu.field %}, {{ edu.field }}{% endif %}</div>
+        <div class="edu-institution">{{ edu.institution }}</div>
+        <div class="edu-dates">{{ edu.start_date }} – {{ edu.end_date }}{% if edu.gpa %} · GPA {{ edu.gpa }}{% endif %}</div>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if projects %}
+      <div class="sec-head">Projects</div>
+      {% for proj in projects %}
+      <div class="ext-item">
+        <div class="ext-top">
+          <span class="ext-title">{{ proj.name }}</span>
+          {% if proj.start_date or proj.end_date %}
+          <span class="ext-meta">{{ proj.start_date }}{% if proj.start_date and proj.end_date %} – {% endif %}{{ proj.end_date }}</span>
+          {% endif %}
+        </div>
+        {% if proj.url %}<div class="ext-url">{{ proj.url }}</div>{% endif %}
+        <p class="ext-desc">{{ proj.description }}</p>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if certifications %}
+      <div class="sec-head">Certifications</div>
+      {% for cert in certifications %}
+      <div class="ext-item">
+        <div class="ext-top">
+          <span class="ext-title">{{ cert.name }}</span>
+          <span class="ext-meta">{{ cert.issue_date }}</span>
+        </div>
+        <div class="ext-sub">{{ cert.issuer }}{% if cert.credential_id %} · {{ cert.credential_id }}{% endif %}</div>
+        {% if cert.url %}<div class="ext-url">{{ cert.url }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if awards %}
+      <div class="sec-head">Awards & Honors</div>
+      {% for award in awards %}
+      <div class="ext-item">
+        <div class="ext-top">
+          <span class="ext-title">{{ award.title }}</span>
+          <span class="ext-meta">{{ award.date }}</span>
+        </div>
+        <div class="ext-sub">{{ award.issuer }}</div>
+        {% if award.description %}<p class="ext-desc">{{ award.description }}</p>{% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+    </div>
+
+    <!-- Sidebar column -->
+    <div class="col-side">
+      {% if skills %}
+      <div class="sec-head">Skills</div>
+      {% for skill in skills %}
+      <div class="skill-item">
+        <span class="skill-item-name">{{ skill.name }}</span>
+        <span class="skill-item-dots">{% for i in range(5) %}{% if i < skill.level %}●{% else %}○{% endif %}{% endfor %}</span>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if languages %}
+      <div class="sec-head">Languages</div>
+      {% for lang in languages %}
+      <div class="lang-item">
+        <span>{{ lang.name }}</span>
+        <span class="lang-prof">{{ lang.proficiency }}</span>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+
+  </div>
+
+</body>
+</html>

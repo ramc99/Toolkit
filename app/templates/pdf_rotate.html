@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Rotate PDF{% endblock %}
+{% block content %}
+
+<div class="mb-6 flex items-center gap-2">
+    <a href="/pdf/" class="text-sm text-gray-400 hover:text-[#4a6cf7] transition-colors"><i class="fa-solid fa-chevron-left mr-1 text-xs"></i>PDF Tools</a>
+    <span class="text-gray-300 dark:text-gray-600">/</span>
+    <span class="text-sm text-gray-600 dark:text-gray-300 font-medium">Rotate Pages</span>
+</div>
+
+<div class="max-w-xl">
+    <h1 class="text-xl font-bold mb-1">Rotate PDF Pages</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Rotate all or specific pages of a PDF by 90, 180 or 270 degrees.</p>
+
+    <form method="post" enctype="multipart/form-data"
+          class="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-6 space-y-4">
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">PDF File</label>
+            <div class="file-zone">
+                <input type="file" name="file" accept=".pdf" required>
+                <div class="text-2xl text-gray-400 mb-1"><i class="fa-regular fa-file-pdf"></i></div>
+                <div class="text-xs text-gray-400"><strong class="text-[#4a6cf7]">Click to browse</strong> or drag &amp; drop &mdash; .pdf only</div>
+            </div>
+            <p class="file-name text-xs text-gray-500 dark:text-gray-400 mt-1 min-h-4"></p>
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Rotation</label>
+            <div class="flex gap-4">
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" name="angle" value="90" checked class="accent-[#4a6cf7]"> 90° CW
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" name="angle" value="180" class="accent-[#4a6cf7]"> 180°
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" name="angle" value="270" class="accent-[#4a6cf7]"> 90° CCW
+                </label>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Pages</label>
+            <div class="flex gap-4 mb-2">
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" name="page_mode" value="all" checked class="accent-[#4a6cf7]" id="pm-all"> All pages
+                </label>
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" name="page_mode" value="specific" class="accent-[#4a6cf7]" id="pm-specific"> Specific pages
+                </label>
+            </div>
+            <div id="specific-pages" class="hidden">
+                <input type="text" name="pages" placeholder="e.g. 1,3,5"
+                    class="w-full px-3 py-2 text-sm border border-slate-200 dark:border-gray-600 rounded-lg bg-slate-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#4a6cf7]/30 focus:border-[#4a6cf7]">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-rotate"></i> Rotate Pages
+        </button>
+    </form>
+</div>
+
+<script>
+document.querySelectorAll('input[name="page_mode"]').forEach(r => {
+    r.addEventListener('change', () => {
+        document.getElementById('specific-pages').classList.toggle(
+            'hidden', document.getElementById('pm-all').checked
+        );
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Resize Image{% endblock %}
+{% block content %}
+
+<div class="breadcrumb"><a href="/">Home</a><span class="sep">/</span><a href="/image/">Image Tools</a><span class="sep">/</span><span>Resize Image</span></div>
+
+<div class="flex items-center gap-3 mb-6">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-400" style="background:rgba(251,191,36,.1)">
+        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+    </div>
+    <div>
+        <h1 class="page-title" style="margin-bottom:0">Resize Image</h1>
+        <p style="font-size:13px;color:var(--muted)">Scale to custom dimensions. Lock aspect ratio to avoid distortion.</p>
+    </div>
+</div>
+
+<div id="upload-section" class="tool-page-card">
+    <form id="tool-form" enctype="multipart/form-data" class="space-y-4">
+        <div>
+            <label class="form-label">Image File</label>
+            <div class="file-zone">
+                <input type="file" name="file" accept=".png,.jpg,.jpeg,.webp,.bmp,.tiff" required>
+                <i class="fa-solid fa-image text-2xl mb-1" style="color:var(--muted)"></i>
+                <div class="text-xs mt-1" style="color:var(--muted)"><strong style="color:var(--accent)">Click to browse</strong> or drag &amp; drop</div>
+            </div>
+            <p class="file-name text-xs mt-1" style="color:var(--muted);min-height:1rem"></p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div>
+                <label class="form-label">Width (px)</label>
+                <input type="number" name="width" min="1" placeholder="e.g. 1920" required class="form-input">
+            </div>
+            <div>
+                <label class="form-label">Height (px)</label>
+                <input type="number" name="height" min="1" placeholder="e.g. 1080" required class="form-input">
+            </div>
+        </div>
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="keep_aspect" value="true" checked class="w-4 h-4 rounded" style="accent-color:var(--accent)">
+            <span class="text-sm" style="color:var(--text)">Keep aspect ratio</span>
+        </label>
+        <input type="hidden" name="keep_aspect" id="keep_aspect_hidden" value="true">
+        <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-up-right-and-down-left-from-center"></i> Resize Image
+        </button>
+    </form>
+</div>
+
+<div id="loading-section" class="hidden tool-page-card text-center py-10">
+    <div class="inline-block w-10 h-10 border-4 rounded-full animate-spin mb-4" style="border-color:var(--card-border);border-top-color:var(--accent)"></div>
+    <p style="color:var(--muted);font-size:13px">Resizing…</p>
+</div>
+
+{% include 'image_comparison.html' %}
+
+<script>
+document.getElementById('keep_aspect').addEventListener('change', function() {
+    document.getElementById('keep_aspect_hidden').value = this.checked ? 'true' : 'false';
+});
+</script>
+{% include 'image_tool_js.html' %}
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Office to PDF{% endblock %}
+{% block content %}
+
+<div class="mb-6 flex items-center gap-2">
+    <a href="/pdf/" class="text-sm text-gray-400 hover:text-[#4a6cf7] transition-colors"><i class="fa-solid fa-chevron-left mr-1 text-xs"></i>PDF Tools</a>
+    <span class="text-gray-300 dark:text-gray-600">/</span>
+    <span class="text-sm text-gray-600 dark:text-gray-300 font-medium">Office to PDF</span>
+</div>
+
+<div class="max-w-xl">
+    <h1 class="text-xl font-bold mb-1">Office to PDF</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Convert Word, Excel, or PowerPoint files to PDF using LibreOffice. Requires LibreOffice to be installed locally.</p>
+
+    <div class="flex items-start gap-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-xs text-amber-800 dark:text-amber-300 mb-4">
+        <i class="fa-solid fa-triangle-exclamation mt-0.5 flex-shrink-0"></i>
+        <span>Requires LibreOffice: <code class="bg-amber-100 dark:bg-amber-900/40 px-1 rounded">sudo apt install libreoffice</code></span>
+    </div>
+
+    <form method="post" enctype="multipart/form-data"
+          class="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-6 space-y-4">
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">Office File</label>
+            <div class="file-zone">
+                <input type="file" name="file" accept=".docx,.doc,.xlsx,.xls,.pptx,.ppt,.odt,.ods,.odp" required>
+                <div class="text-2xl text-gray-400 mb-1"><i class="fa-solid fa-file-word"></i></div>
+                <div class="text-xs text-gray-400"><strong class="text-[#4a6cf7]">Click to browse</strong> or drag &amp; drop &mdash; .docx, .xlsx, .pptx and more</div>
+            </div>
+            <p class="file-name text-xs text-gray-500 dark:text-gray-400 mt-1 min-h-4"></p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+            <i class="fa-solid fa-file-pdf"></i> Convert to PDF
+        </button>
+    </form>
+</div>
+{% endblock %}

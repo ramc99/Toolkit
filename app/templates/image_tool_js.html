@@ -1,0 +1,103 @@
+{# Shared AJAX submit + comparison renderer for image tool pages #}
+<script>
+(function() {
+    const form    = document.getElementById('tool-form');
+    const upload  = document.getElementById('upload-section');
+    const loading = document.getElementById('loading-section');
+    const result  = document.getElementById('result-section');
+    const before  = document.getElementById('before-section');
+
+    // ── Show Before preview as soon as a file is selected ────────────────
+    const fileInput = form.querySelector('input[type="file"]');
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = document.getElementById('img-before');
+            img.src = e.target.result;
+            document.getElementById('foot-before').textContent =
+                `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
+            before.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        upload.classList.add('hidden');
+        loading.classList.remove('hidden');
+        result.classList.add('hidden');
+
+        const fd = new FormData(form);
+        try {
+            const res = await fetch(window.location.pathname, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd,
+            });
+            const data = await res.json();
+            loading.classList.add('hidden');
+
+            if (!res.ok || data.error) {
+                upload.classList.remove('hidden');
+                alert(data.error || 'Something went wrong.');
+                return;
+            }
+
+            // Stats
+            document.getElementById('stat-orig-size').textContent   = data.original.size_fmt;
+            document.getElementById('stat-orig-dims').textContent   = data.original.width && data.original.height
+                ? `${data.original.width} × ${data.original.height} · ${data.original.format}` : data.original.format;
+            document.getElementById('stat-result-size').textContent = data.result.size_fmt;
+            document.getElementById('stat-result-dims').textContent = data.result.width && data.result.height
+                ? `${data.result.width} × ${data.result.height} · ${data.result.format}` : data.result.format;
+
+            const badge = document.getElementById('stat-badge');
+            if (data.saving_pct > 0) {
+                badge.textContent = `−${data.saving_pct}%`;
+                badge.classList.remove('hidden');
+            } else if (data.saving_pct < 0) {
+                badge.textContent = `+${Math.abs(data.saving_pct)}%`;
+                badge.style.background = 'rgba(239,68,68,.12)';
+                badge.style.color = '#f87171';
+                badge.style.borderColor = 'rgba(239,68,68,.25)';
+                badge.classList.remove('hidden');
+            }
+
+            // Images
+            document.getElementById('img-before').src = data.original.url + '?t=' + Date.now();
+            document.getElementById('img-after').src  = data.result.url   + '?t=' + Date.now();
+            document.getElementById('foot-before').textContent =
+                `${data.original.size_fmt} · ${data.original.width}×${data.original.height} · ${data.original.format}`;
+            document.getElementById('foot-after').textContent =
+                `${data.result.size_fmt} · ${data.result.width}×${data.result.height} · ${data.result.format}`;
+
+            // Download
+            const dl = document.getElementById('download-btn');
+            dl.href     = data.download_url;
+            dl.download = data.download_name;
+
+            result.classList.remove('hidden');
+        } catch (err) {
+            loading.classList.add('hidden');
+            upload.classList.remove('hidden');
+            alert('Network error — please try again.');
+        }
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        form.reset();
+        result.classList.add('hidden');
+        before.classList.add('hidden');
+        upload.classList.remove('hidden');
+        document.getElementById('img-before').src = '';
+        document.getElementById('foot-before').textContent = '—';
+        const badge = document.getElementById('stat-badge');
+        badge.classList.add('hidden');
+        badge.style.background = 'rgba(34,197,94,.12)';
+        badge.style.color = '#4ade80';
+        badge.style.borderColor = 'rgba(34,197,94,.25)';
+    });
+})();
+</script>

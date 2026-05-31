@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ sender.name }} — Cover Letter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10.5pt; color: #111; background: #fff; padding: 38pt 50pt; line-height: 1.65; }
+
+    .name { font-size: 18pt; font-weight: 700; letter-spacing: -0.2pt; }
+    .contact-row { font-size: 8.5pt; color: #555; margin-top: 4pt; }
+    .contact-row span + span::before { content: "  ·  "; color: #bbb; }
+
+    hr { border: none; border-top: 0.75pt solid #ccc; margin: 13pt 0; }
+
+    .meta-date { font-size: 9.5pt; color: #555; margin-bottom: 5pt; }
+    .meta-re { font-weight: 600; font-size: 10pt; color: #111; margin-bottom: 14pt; }
+
+    .salutation { font-size: 10.5pt; margin-bottom: 14pt; }
+
+    p { font-size: 10.5pt; color: #222; margin-bottom: 11pt; }
+
+    .sign-off { margin-top: 22pt; font-size: 10.5pt; color: #222; }
+    .sign-name { font-weight: 700; font-size: 12pt; margin-top: 8pt; }
+
+    @media print {
+      body { padding: 0; }
+      @page { margin: 22mm 20mm; size: A4; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="name">{{ sender.name }}</div>
+  <div class="contact-row">
+    <span>{{ sender.email }}</span>
+    <span>{{ sender.phone }}</span>
+    <span>{{ sender.location }}</span>
+    {% if sender.linkedin %}<span>{{ sender.linkedin }}</span>{% endif %}
+    {% if sender.website %}<span>{{ sender.website }}</span>{% endif %}
+  </div>
+
+  <hr />
+
+  <div class="meta-date">{{ date }}</div>
+  <div class="meta-re">{{ company }} — {{ job_title }}</div>
+
+  <div class="salutation">Dear {% if hiring_manager %}{{ hiring_manager }}{% else %}Hiring Manager{% endif %},</div>
+
+  {% if opening %}<p>{{ opening }}</p>{% endif %}
+  {% if body_1 %}<p>{{ body_1 }}</p>{% endif %}
+  {% if body_2 %}<p>{{ body_2 }}</p>{% endif %}
+  {% if closing %}<p>{{ closing }}</p>{% endif %}
+
+  <div class="sign-off">
+    <div>Sincerely,</div>
+    <div class="sign-name">{{ sender.name }}</div>
+  </div>
+
+</body>
+</html>
