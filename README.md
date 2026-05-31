@@ -170,3 +170,4 @@ Edit `config.py` or set environment variables:
 - **No database** — all processing is stateless and ephemeral. Uploaded files are stored temporarily in `uploads/`, `splits/`, and `merged/` and are not auto-cleaned.
 - **Synchronous** — file operations block the request. Fine for local single-user use; swap to Celery + Redis for multi-user workloads (infrastructure is already wired in `celery_app.py`).
 - **PDF compare** is file-size diff only — full content diff would require additional libraries.
+# Toolkit
