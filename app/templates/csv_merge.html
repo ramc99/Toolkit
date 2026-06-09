@@ -21,16 +21,35 @@
 <div class="tool-page-card">
     <form action="{{ url_for('main.merge_csv_route') }}" method="post" enctype="multipart/form-data">
 
+        <!-- submission input — managed by JS only -->
+        <input type="file" name="files" id="csv-submit" style="display:none">
+        <!-- pickers — cleared after each use, not submitted -->
+        <input type="file" id="csv-file-picker" accept=".csv,.tsv" multiple style="display:none">
+        <input type="file" id="csv-folder-picker" accept=".csv,.tsv" webkitdirectory multiple style="display:none">
+
         <div class="mb-5">
             <label class="form-label">CSV / TSV Files</label>
-            <div class="file-zone">
-                <input type="file" name="files" accept=".csv,.tsv" multiple required>
+            <div class="file-zone" id="csv-drop-zone" style="cursor:default">
                 <div class="text-2xl text-[#52525b] mb-2"><i class="fa-regular fa-copy"></i></div>
-                <div class="text-xs text-[#71717a]">
-                    <span class="text-emerald-400 font-semibold">Click to browse</span> or drag &amp; drop &mdash; select multiple files
+                <div class="text-xs text-[#71717a] mb-3">Drag &amp; drop files or folders here, or use the buttons below</div>
+                <div class="flex gap-2 justify-center">
+                    <button type="button" onclick="document.getElementById('csv-file-picker').click()"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors">
+                        <i class="fa-regular fa-file mr-1"></i>Add Files
+                    </button>
+                    <button type="button" onclick="document.getElementById('csv-folder-picker').click()"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-colors">
+                        <i class="fa-solid fa-folder-open mr-1"></i>Add Folder
+                    </button>
                 </div>
             </div>
-            <p class="file-name text-xs text-[#a1a1aa] mt-1.5 min-h-4"></p>
+            <div id="csv-file-list" class="mt-2 hidden">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span id="csv-file-count" class="text-xs text-[#a1a1aa]"></span>
+                    <button type="button" id="csv-clear" class="text-xs text-red-400 hover:text-red-300 transition-colors">Clear all</button>
+                </div>
+                <div id="csv-file-items" class="flex flex-col gap-1 max-h-40 overflow-y-auto"></div>
+            </div>
         </div>
 
         <div class="mb-6">
@@ -51,10 +70,94 @@
             document.getElementById('format-val').value = btn.dataset.val;
         });
         </script>
+
         <button type="submit" class="btn btn-success btn-full">
             <i class="fa-solid fa-code-merge"></i> Merge Files
         </button>
     </form>
+
+    <script>
+    (function () {
+        const submitInput  = document.getElementById('csv-submit');
+        const filePicker   = document.getElementById('csv-file-picker');
+        const folderPicker = document.getElementById('csv-folder-picker');
+        const dropZone     = document.getElementById('csv-drop-zone');
+        const fileList     = document.getElementById('csv-file-list');
+        const fileCount    = document.getElementById('csv-file-count');
+        const fileItems    = document.getElementById('csv-file-items');
+        const form         = document.querySelector('form[action*="merge"]');
+
+        const EXTS = new Set(['.csv', '.tsv']);
+        let dt = new DataTransfer();
+
+        function extOf(name) { return name.slice(name.lastIndexOf('.')).toLowerCase(); }
+
+        function addFiles(fileArray) {
+            for (const f of fileArray) {
+                if (EXTS.has(extOf(f.name))) dt.items.add(f);
+            }
+            sync();
+        }
+
+        function sync() {
+            submitInput.files = dt.files;
+            const n = dt.files.length;
+            if (n === 0) { fileList.classList.add('hidden'); return; }
+            fileList.classList.remove('hidden');
+            fileCount.textContent = n + ' file' + (n > 1 ? 's' : '') + ' selected';
+            fileItems.innerHTML = '';
+            Array.from(dt.files).forEach((f, i) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs bg-zinc-800/50 border border-zinc-700/40';
+                row.innerHTML = `<span class="flex-1 truncate text-[#a1a1aa]">${f.webkitRelativePath || f.name}</span>
+                    <button type="button" data-idx="${i}" class="rm-btn flex-shrink-0 text-[#52525b] hover:text-red-400 transition-colors"><i class="fa-solid fa-xmark"></i></button>`;
+                fileItems.appendChild(row);
+            });
+        }
+
+        fileItems.addEventListener('click', e => {
+            const btn = e.target.closest('.rm-btn');
+            if (!btn) return;
+            const idx = +btn.dataset.idx;
+            const newDt = new DataTransfer();
+            Array.from(dt.files).forEach((f, i) => { if (i !== idx) newDt.items.add(f); });
+            dt = newDt; sync();
+        });
+
+        document.getElementById('csv-clear').addEventListener('click', () => { dt = new DataTransfer(); sync(); });
+
+        filePicker.addEventListener('change', () => { addFiles(filePicker.files); filePicker.value = ''; });
+        folderPicker.addEventListener('change', () => { addFiles(folderPicker.files); folderPicker.value = ''; });
+
+        /* ── Drag-and-drop ── */
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#34d399'; });
+        dropZone.addEventListener('dragleave', e => { if (!dropZone.contains(e.relatedTarget)) dropZone.style.borderColor = ''; });
+        dropZone.addEventListener('drop', async e => {
+            e.preventDefault(); dropZone.style.borderColor = '';
+            const files = [];
+            await Promise.all(Array.from(e.dataTransfer.items).map(item => {
+                const entry = item.webkitGetAsEntry && item.webkitGetAsEntry();
+                if (!entry) return;
+                return entry.isDirectory ? collectDir(entry, files)
+                    : new Promise(r => entry.file(f => { files.push(f); r(); }));
+            }));
+            addFiles(files.length ? files : Array.from(e.dataTransfer.files));
+        });
+
+        async function collectDir(dir, out) {
+            const reader = dir.createReader();
+            const entries = await new Promise(r => reader.readEntries(r));
+            await Promise.all(entries.map(e =>
+                e.isDirectory ? collectDir(e, out)
+                    : new Promise(r => e.file(f => { out.push(f); r(); }))
+            ));
+        }
+
+        form.addEventListener('submit', e => {
+            if (!dt.files.length) { e.preventDefault(); alert('Please add at least one CSV or TSV file.'); }
+        });
+    })();
+    </script>
 </div>
 
 <div class="mt-6 flex flex-col gap-2 max-w-[560px]">

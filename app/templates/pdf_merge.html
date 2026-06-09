@@ -14,20 +14,120 @@
 
     <form method="post" enctype="multipart/form-data"
           class="bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-2xl shadow-sm p-6 space-y-4">
+        <!-- submission input — managed by JS only -->
+        <input type="file" name="files" id="pdf-submit" style="display:none">
+        <!-- pickers — cleared after each use, not submitted -->
+        <input type="file" id="pdf-file-picker" accept=".pdf" multiple style="display:none">
+        <input type="file" id="pdf-folder-picker" accept=".pdf" webkitdirectory multiple style="display:none">
 
         <div>
-            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">PDF Files (select 2 or more)</label>
-            <div class="file-zone">
-                <input type="file" name="files" accept=".pdf" multiple required>
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1.5">PDF Files (2 or more)</label>
+            <div class="file-zone" id="pdf-drop-zone" style="cursor:default">
                 <div class="text-2xl text-gray-400 mb-1"><i class="fa-regular fa-file-pdf"></i></div>
-                <div class="text-xs text-gray-400"><strong class="text-[#4a6cf7]">Click to browse</strong> or drag &amp; drop &mdash; hold Ctrl/Cmd to select multiple</div>
+                <div class="text-xs text-gray-400 mb-3">Drag &amp; drop files or folders here, or use the buttons below</div>
+                <div class="flex gap-2 justify-center">
+                    <button type="button" onclick="document.getElementById('pdf-file-picker').click()"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/10 text-[#4a6cf7] border border-blue-500/20 hover:bg-blue-500/20 transition-colors">
+                        <i class="fa-regular fa-file-pdf mr-1"></i>Add Files
+                    </button>
+                    <button type="button" onclick="document.getElementById('pdf-folder-picker').click()"
+                        class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-500/10 text-violet-400 border border-violet-500/20 hover:bg-violet-500/20 transition-colors">
+                        <i class="fa-solid fa-folder-open mr-1"></i>Add Folder
+                    </button>
+                </div>
             </div>
-            <p class="file-name text-xs text-gray-500 dark:text-gray-400 mt-1 min-h-4"></p>
+            <div id="pdf-file-list" class="mt-2 hidden">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span id="pdf-file-count" class="text-xs text-gray-500 dark:text-gray-400"></span>
+                    <button type="button" id="pdf-clear" class="text-xs text-red-400 hover:text-red-300 transition-colors">Clear all</button>
+                </div>
+                <div id="pdf-file-items" class="flex flex-col gap-1 max-h-40 overflow-y-auto"></div>
+            </div>
         </div>
 
         <button type="submit" class="btn btn-primary btn-full">
             <i class="fa-solid fa-layer-group"></i> Merge PDFs
         </button>
     </form>
+
+    <script>
+    (function () {
+        const submitInput  = document.getElementById('pdf-submit');
+        const filePicker   = document.getElementById('pdf-file-picker');
+        const folderPicker = document.getElementById('pdf-folder-picker');
+        const dropZone     = document.getElementById('pdf-drop-zone');
+        const fileList     = document.getElementById('pdf-file-list');
+        const fileCount    = document.getElementById('pdf-file-count');
+        const fileItems    = document.getElementById('pdf-file-items');
+        const form         = document.querySelector('form[method="post"]');
+
+        let dt = new DataTransfer();
+
+        function addFiles(fileArray) {
+            for (const f of fileArray) {
+                if (f.name.toLowerCase().endsWith('.pdf')) dt.items.add(f);
+            }
+            sync();
+        }
+
+        function sync() {
+            submitInput.files = dt.files;
+            const n = dt.files.length;
+            if (n === 0) { fileList.classList.add('hidden'); return; }
+            fileList.classList.remove('hidden');
+            fileCount.textContent = n + ' file' + (n > 1 ? 's' : '') + ' selected';
+            fileItems.innerHTML = '';
+            Array.from(dt.files).forEach((f, i) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs bg-gray-50 dark:bg-gray-700/60 border border-gray-200 dark:border-gray-600/40';
+                row.innerHTML = `<span class="flex-1 truncate text-gray-600 dark:text-gray-300">${f.webkitRelativePath || f.name}</span>
+                    <button type="button" data-idx="${i}" class="rm-btn flex-shrink-0 text-gray-400 hover:text-red-400 transition-colors"><i class="fa-solid fa-xmark"></i></button>`;
+                fileItems.appendChild(row);
+            });
+        }
+
+        fileItems.addEventListener('click', e => {
+            const btn = e.target.closest('.rm-btn');
+            if (!btn) return;
+            const idx = +btn.dataset.idx;
+            const newDt = new DataTransfer();
+            Array.from(dt.files).forEach((f, i) => { if (i !== idx) newDt.items.add(f); });
+            dt = newDt; sync();
+        });
+
+        document.getElementById('pdf-clear').addEventListener('click', () => { dt = new DataTransfer(); sync(); });
+
+        filePicker.addEventListener('change', () => { addFiles(filePicker.files); filePicker.value = ''; });
+        folderPicker.addEventListener('change', () => { addFiles(folderPicker.files); folderPicker.value = ''; });
+
+        /* ── Drag-and-drop ── */
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#4a6cf7'; });
+        dropZone.addEventListener('dragleave', e => { if (!dropZone.contains(e.relatedTarget)) dropZone.style.borderColor = ''; });
+        dropZone.addEventListener('drop', async e => {
+            e.preventDefault(); dropZone.style.borderColor = '';
+            const files = [];
+            await Promise.all(Array.from(e.dataTransfer.items).map(item => {
+                const entry = item.webkitGetAsEntry && item.webkitGetAsEntry();
+                if (!entry) return;
+                return entry.isDirectory ? collectDir(entry, files)
+                    : new Promise(r => entry.file(f => { files.push(f); r(); }));
+            }));
+            addFiles(files.length ? files : Array.from(e.dataTransfer.files));
+        });
+
+        async function collectDir(dir, out) {
+            const reader = dir.createReader();
+            const entries = await new Promise(r => reader.readEntries(r));
+            await Promise.all(entries.map(e =>
+                e.isDirectory ? collectDir(e, out)
+                    : new Promise(r => e.file(f => { out.push(f); r(); }))
+            ));
+        }
+
+        form.addEventListener('submit', e => {
+            if (dt.files.length < 2) { e.preventDefault(); alert('Please add at least 2 PDF files.'); }
+        });
+    })();
+    </script>
 </div>
 {% endblock %}
